@@ -76,7 +76,7 @@ generate_Qsplines <- function(segments, a, p0 = 0, pK1 = 0)
   for(k in 0:(K-1))
   {
     # sum of trapezoids up to segment k
-    p[k+2] <- p[k+1] + 0.5 * (v[k+1] + v[k+2]) * delta_tau[k+1]
+    p[k+2] <- p[k+1] + 0.5 * (v[k+1] + v[k+2]) * segments[k+1]
   }
 
   return(list(p = p[-length(p)], v = v[-length(v)], a = a))
