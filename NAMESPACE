@@ -1,3 +1,7 @@
 exportPattern("^[[:alpha:]]+")
 importFrom(Rcpp, evalCpp)
 useDynLib(splineOP, .registration = TRUE)
+
+importFrom("graphics", "legend", "lines")
+importFrom("stats", "rgamma", "rnorm")
+importFrom("utils", "tail")
