@@ -1,0 +1,20 @@
+Package: splineOP
+Type: Package
+Title: computing the change-point location of a quadratic spline fit
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Jane", "Doe",
+      email = "jane@example.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: This package computes the quadratic piecewise fit (quadratic spline) using an approach inspired by the dynamic programming strategy.
+    The algorithm lies on two approximations. We discretize the states values that can be taken at each time step and we use a finite number of initial spline speed at initial time.
+    Its time complexity is quadratic in time and in state values.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports: Rcpp (>= 1.1.0)
+LinkingTo: Rcpp
+RoxygenNote: 7.3.3
