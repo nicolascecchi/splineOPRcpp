@@ -34,4 +34,7 @@ generate_segment_lengths(100, 5)
 
 # Use a non-uniform Dirichlet parameter
 generate_segment_lengths(50, 3, alpha = c(2, 5, 3))
+
+# Almost uniform segment lengths
+generate_segment_lengths(200, 4, alpha = rep(10^3,4))
 }

@@ -1,0 +1,116 @@
+---
+title: "README"
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+<a id="top"></a>
+
+# splineOP Vignette
+
+
+### Vincent Runge
+#### LaMME, Evry University, October 27, 2025
+
+<center>
+<img src="man/figures/dust.png" alt="" style="width:30%;"/>
+</center>
+
+> [Quick start](#start)
+
+> [Models And Data Generators](#Models)
+
+> [splineOP](#splineOP)
+
+<center>
+<img src="man/figures/sep.png" alt="" style="width:100%;"/>
+</center>
+
+<a id="start"></a>
+
+## Quick start
+
+
+### Introduction
+
+### Installing the dust Rcpp package
+
+**REQUIREMENTS:**
+- R >= 3.4
+- devtools : `install.packages('devtools')`
+
+The package can then be installed from the github repo with the following command:
+
+```{r, message=FALSE, eval = FALSE}
+devtools::install_github("vrunge/splineOP")
+```
+
+and imported with:
+
+```{r, message=FALSE, eval = FALSE}
+library(splineOP)
+```
+
+
+### A simple example
+
+We generate some 1D time series of length `400` from the Gaussian model and one change in the middle of the sequence.
+
+```{r, message=FALSE}
+library(splineOP)
+# Example with 5 segments and given accelerations
+segments <- generate_segment_lengths(400, 5)
+accelerations <- rnorm(5)
+result <- generate_Qsplines(segments, accelerations, max1 = TRUE)
+#'
+# Inspect results
+result$p  # positions
+result$v  # velocities
+result$a  # accelerations
+#'
+# Plot positions along the spline
+plot_Qspline(result, segments)
+```
+
+
+
+[(Back to Top)](#top)
+
+<center>
+<img src="man/figures/sep.png" alt="" style="width:100%;"/>
+</center>
+
+<a id="Models"></a>
+
+## Models And Data Generators
+
+
+### Quadratic Splines
+
+
+### Data Generators 
+
+
+[(Back to Top)](#top)
+
+<center>
+<img src="man/figures/sep.png" alt="" style="width:100%;"/>
+</center>
+
+<a id="splineOP"></a>
+
+## splineOP
+
+
+```{r, message=FALSE}
+
+```
+
+[(Back to Top)](#top)
+
+
+

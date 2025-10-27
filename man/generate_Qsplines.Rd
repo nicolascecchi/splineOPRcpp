@@ -2,52 +2,56 @@
 % Please edit documentation in R/generate_Qsplines.R
 \name{generate_Qsplines}
 \alias{generate_Qsplines}
-\title{Compute Quadratic K-Splines from Segment Lengths and Accelerations}
+\title{Compute Quadratic Splines from Segment Lengths and Accelerations}
 \usage{
-generate_Qsplines(segments, a, p0 = 0, pK1 = 0)
+generate_Qsplines(segments, a, max1 = TRUE, p0 = 0, pK1 = 0)
 }
 \arguments{
 \item{segments}{Numeric vector of positive segment lengths.}
 
 \item{a}{Numeric vector of accelerations, of the same length as `segments`.}
+
+\item{max1}{Logical, if TRUE the positions, velocities, and accelerations are scaled
+so that the maximum absolute position equals 1 (default TRUE).}
+
+\item{p0}{Numeric, starting position (default 0).}
+
+\item{pK1}{Numeric, ending position (default 0).}
 }
 \value{
 A list with components:
 \describe{
-  \item{p}{Normalized positions along the spline.}
-  \item{v}{Normalized velocities at segment boundaries.}
-  \item{a}{Normalized accelerations (same as input, scaled).}
+  \item{p}{Positions along the spline (normalized if `max1 = TRUE`).}
+  \item{v}{Velocities at segment boundaries (normalized if `max1 = TRUE`).}
+  \item{a}{Accelerations (scaled if `max1 = TRUE`).}
 }
 }
 \description{
-Computes piecewise quadratic spline quantities (position, speed, acceleration)
+Computes piecewise quadratic spline quantities (positions, velocities, accelerations)
 for a system of segments characterized by given lengths and accelerations.
+The spline starts and ends at specified positions (`p0` and `pK1`), which default to zero.
+Optionally, the positions, velocities, and accelerations can be normalized so that
+the maximum absolute position equals 1.
 }
 \details{
-The function constructs and solves a linear system \eqn{A vtilde = b}, where:
+The function constructs and solves a linear system \eqn{A v = b}, where:
 \itemize{
-  \item \eqn{b = (segments * a, 0)} defines acceleration constraints,
+  \item \eqn{b = (segments * a, p_{end} - p_{start})} encodes the acceleration and boundary constraints,
   \item \eqn{A} is a structured matrix encoding spline continuity conditions,
-  \item \eqn{v} are auxiliary velocity variables.
+  \item \eqn{v} are auxiliary velocity variables at segment boundaries.
 }
-
-The resulting positions, velocities, and accelerations are normalized so that
-the maximum absolute position equals 1 (unless all positions are zero).
 }
 \examples{
 # Example with 5 segments and given accelerations
-segments <- c(10, 20, 15, 10, 20)
-accelerations <- c(0.5, -0.2, 0.3, 0.1, -0.1)
-result <- generate_Qsplines(segments, accelerations)
+segments <- generate_segment_lengths(400, 5)
+accelerations <- rnorm(5)
+result <- generate_Qsplines(segments, accelerations, max1 = TRUE)
 
 # Inspect results
 result$p  # positions
 result$v  # velocities
-result$a  # normalized accelerations
+result$a  # accelerations
 
 # Plot positions along the spline
-tim <- rep(1:5, segments)
-plot(result$p[time], type = "b", main = "Quadratic K-Spline Positions",
-     xlab = "Segment Index", ylab = "Normalized Position")
-
+plot_Qspline(result, segments)
 }

@@ -25,6 +25,9 @@
 #'
 #' # Use a non-uniform Dirichlet parameter
 #' generate_segment_lengths(50, 3, alpha = c(2, 5, 3))
+#'
+#' # Almost uniform segment lengths
+#' generate_segment_lengths(200, 4, alpha = rep(10^3,4))
 generate_segment_lengths <- function(N, K, alpha = rep(1, K))
 {
   # Internal Dirichlet sampler
@@ -50,8 +53,10 @@ generate_segment_lengths <- function(N, K, alpha = rep(1, K))
   {
     # Compute fractional parts (residuals)
     residuals <- (proportions * N) - segment_lengths
+
     # Order indices by descending residuals
     order_idx <- order(residuals, decreasing = TRUE)
+
     # Distribute remaining counts to the top |diff| entries
     segment_lengths[order_idx[seq_len(abs(diff))]] <-
       segment_lengths[order_idx[seq_len(abs(diff))]] + sign(diff)

@@ -1,5 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 simulations
+figures
 README.Rmd
 ^LICENSE\.md$

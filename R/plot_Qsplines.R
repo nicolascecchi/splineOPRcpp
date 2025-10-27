@@ -1,79 +1,40 @@
-#' Plot a Quadratic Spline from Segment Parameters
+#' Plot a Quadratic Spline from Generated Positions, Velocities, and Accelerations
 #'
-#' @description
-#' Plots a piecewise quadratic spline defined by positions, speeds, and accelerations
-#' at the start of each segment.
+#' @param result List output from `generate_Qsplines`, containing p, v, a.
+#' @param segments Numeric vector of segment lengths used to generate the spline.
+#' @param n_points Number of points per segment for smooth plotting (default 50).
+#' @param main Title of the plot (default "Quadratic K-Spline Positions").
 #'
-#' @param positions Numeric vector of positions at the start of each segment.
-#' @param speeds Numeric vector of initial speeds for each segment.
-#' @param accelerations Numeric vector of accelerations for each segment.
-#' @param segment_lengths Numeric vector of segment lengths.
-#' @param main Character. Title of the plot.
-#' @param col Character. Color of the spline curve.
-#'
-#' @details
-#' For each segment \eqn{i}, the spline is defined by:
-#' \deqn{y_i(t) = p_i + v_i t + \tfrac{1}{2} a_i t^2, \quad t \in [0, \text{segment\_length}_i].}
-#' The function ensures positional continuity across segments.
-#'
-#' @examples
-#' seg <- c(10, 20, 10)
-#' acc <- c(0.5, -0.2, 0.3)
-#' res <- generate_Qsplines(seg, acc)
-#' plot_Qsplines(res$p[-length(res$p)], res$v, res$a, seg)
-#'
-#' @export
-plot_Qsplines <- function(positions,
-                          speeds,
-                          accelerations,
-                          segment_lengths,
-                          main = "Quadratic Spline",
-                          col = "blue")
+#' @return A plot of the quadratic spline and segment boundary positions.
+plot_Qspline <- function(result,
+                         segments,
+                         n_points = 50,
+                         main = "Quadratic K-Spline Positions")
 {
+  x_full <- c()  # cumulative distance along the spline
+  p_full <- c()  # interpolated positions
 
-  if (length(positions) != length(speeds) ||
-      length(positions) != length(accelerations) ||
-      length(positions) != length(segment_lengths)) {
-    stop("All input vectors must have the same length.")
-  }
-
-  K <- length(positions)
-  x_start <- 0
-  y_start <- positions[1]
-
-  # Compute overall min and max for plotting
-  y_values <- numeric(0)
-  for (i in seq_len(K))
+  cum_len <- 0
+  for (i in seq_along(segments))
   {
-    t <- seq(0, segment_lengths[i], length.out = 200)
-    y_seg <- y_start + speeds[i] * t + 0.5 * accelerations[i] * t^2
-    y_values <- c(y_values, y_seg)
-    y_start <- tail(y_seg, 1)  # ensure continuity
+    seg_len <- segments[i]
+    t <- seq(0, seg_len, length.out = n_points)
+    # Quadratic interpolation within segment
+    p_seg <- result$p[i] + result$v[i] * t + 0.5 * result$a[i] * t^2
+    x_full <- c(x_full, cum_len + t)
+    p_full <- c(p_full, p_seg)
+    cum_len <- cum_len + seg_len
   }
 
-  # Plot setup
-  total_length <- sum(segment_lengths)
-  plot(NULL, xlim = c(0, total_length), ylim = range(y_values),
-       xlab = "Time", ylab = "Position", main = main)
+  # Plot the spline
+  plot(x_full, p_full, type = "l", lwd = 2,
+       main = main,
+       xlab = "Distance along spline",
+       ylab = "Normalized Position")
 
-  # Reset for drawing segments
-  x_start <- 0
-  y_start <- positions[1]
-
-  for (i in seq_len(K))
-  {
-    t <- seq(0, segment_lengths[i], length.out = 200)
-    y_seg <- y_start + speeds[i] * t + 0.5 * accelerations[i] * t^2
-    lines(x_start + t, y_seg, col = col, lwd = 2)
-    x_start <- x_start + segment_lengths[i]
-    y_start <- tail(y_seg, 1)  # update start for next segment
-  }
-
-  legend("topright", legend = "Position", col = col, lty = 1, lwd = 2, bty = "n")
+  # Mark segment boundaries
+  seg_pos <- cumsum(c(0, segments[-length(segments)]))
+  points(seg_pos, result$p, col = "red", pch = 19)
+  #legend("topleft", legend = c("Quadratic spline", "Segment boundary positions"),
+  #       col = c("black", "red"), lty = c(1, NA), pch = c(NA, 19))
 }
-
-
-
-
-
-
