@@ -11,19 +11,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// square_states
-NumericMatrix square_states(NumericVector data, double beta, NumericMatrix states);
-RcppExport SEXP _splineOP_square_states(SEXP dataSEXP, SEXP betaSEXP, SEXP statesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type states(statesSEXP);
-    rcpp_result_gen = Rcpp::wrap(square_states(data, beta, states));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_sum2
 double cpp_sum2(NumericVector v);
 RcppExport SEXP _splineOP_cpp_sum2(SEXP vSEXP) {
@@ -37,7 +24,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_splineOP_square_states", (DL_FUNC) &_splineOP_square_states, 3},
     {"_splineOP_cpp_sum2", (DL_FUNC) &_splineOP_cpp_sum2, 1},
     {NULL, NULL, 0}
 };
