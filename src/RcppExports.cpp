@@ -11,6 +11,21 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// dp_matrix_Rcpp
+Rcpp::IntegerVector dp_matrix_Rcpp(std::vector<double> data, double beta, int S, int nb_initSpeed, double data_var);
+RcppExport SEXP _splineOP_dp_matrix_Rcpp(SEXP dataSEXP, SEXP betaSEXP, SEXP SSEXP, SEXP nb_initSpeedSEXP, SEXP data_varSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<double> >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< int >::type S(SSEXP);
+    Rcpp::traits::input_parameter< int >::type nb_initSpeed(nb_initSpeedSEXP);
+    Rcpp::traits::input_parameter< double >::type data_var(data_varSEXP);
+    rcpp_result_gen = Rcpp::wrap(dp_matrix_Rcpp(data, beta, S, nb_initSpeed, data_var));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_sum2
 double cpp_sum2(NumericVector v);
 RcppExport SEXP _splineOP_cpp_sum2(SEXP vSEXP) {
@@ -24,6 +39,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_splineOP_dp_matrix_Rcpp", (DL_FUNC) &_splineOP_dp_matrix_Rcpp, 5},
     {"_splineOP_cpp_sum2", (DL_FUNC) &_splineOP_cpp_sum2, 1},
     {NULL, NULL, 0}
 };
