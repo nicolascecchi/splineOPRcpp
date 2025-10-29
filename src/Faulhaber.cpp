@@ -1,6 +1,4 @@
-#ifndef FAULHABER_H
-#define FAULHABER_H
-
+#include "Faulhaber.h"
 #include <cmath>
 #include <stdexcept>
 
@@ -18,4 +16,3 @@ double Faulhaber(int n, int deg){
             throw std::out_of_range("Degree must be between 1 and 4");
     }
 }
-#endif

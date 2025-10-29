@@ -3,10 +3,13 @@
 #include <algorithm>
 #include <vector>
 #include <limits>
+#include <cmath>
 #include <random>      // for random number generation
 #include "Matrix.h"
 #include "QuadraticCost.h"
 
+
+// Check if the number is denormalized
 
 spop::Matrix<double> dp_matrix(const std::vector<double>& data,
                            double beta,
@@ -18,7 +21,7 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
   QuadraticCost qc(data); // Precompute all cumulative sums once
 
   spop::Matrix<double> speeds(S, N, 0.0);
-  spop::Matrix<double> initspeeds(nb_initSpeed,1,0.0);
+  spop::Matrix<double> initspeeds(nb_initSpeed,1,-0.017485295);
 
 
   //////////////////////////////////////////////////////////////////////////////
@@ -66,29 +69,29 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
   {
     for (int j = 0; j < S; j++)
     { // current state
-      Rcpp::Rcout << "Enter cost at time: " << t << "\n";
+      //Rcpp::Rcout << "Enter cost at time: " << t << "\n";
       double current_MIN = std::numeric_limits<double>::infinity();
       double best_speed;
       int best_i = -1;
       int best_s = -1;
 
       for (int s = 0; s < t; s++){   // previous time
-        Rcpp::Rcout << "Enter loop of previous times"<< "\n";
-        Rcpp::Rcout << "======================================================="<< "\n";
+        //Rcpp::Rcout << "Enter loop of previous times"<< "\n";
+        //Rcpp::Rcout << "======================================================="<< "\n";
         for (int i = 0; i < S; i++){ // previous state
           // Fix start and end position in time and space
           double p_s = states(i, s);
           double p_t = states(j, t);
           if (s == 0){
-            Rcpp::Rcout << "Enter loop of NO previous changes: s=0"<< "\n";
+            //Rcpp::Rcout << "Enter loop of NO previous changes: s=0"<< "\n";
             for (int j = 0; j < nb_initSpeed; j++){ // init speed loop
               double v_t = 2*(p_t - p_s)/(t - s) - initspeeds(j,0); // simple slope rule
               // Quadratic cost for interval [s, t)
               double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
               // Candidate cost (DP recurrence)
               double candidate = interval_cost;
-              Rcpp::Rcout << "s: " << s <<" t: "<<t << " ps: "<<p_s << " pt: "<< p_t <<" v_t: "<<v_t<<"\n";
-              Rcpp::Rcout << "Cost of no change: "<< candidate;
+              //Rcpp::Rcout << "s: " << s <<" t: "<<t << " ps: "<<p_s << " pt: "<< p_t <<" v_t: "<<v_t<<"\n";
+              //Rcpp::Rcout << "Cost of no change: "<< candidate;
               
               if (candidate < current_MIN){
                 current_MIN = candidate;
@@ -99,18 +102,18 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
             }
           }
           else{
-            Rcpp::Rcout << "Enter loop of WITH previous changes: s!=0"<< "\n";
-            Rcpp::Rcout << "Previous time: " << s << " current time: "<< t<<"\n";
+           //Rcpp::Rcout << "Enter loop of WITH previous changes: s!=0"<< "\n";
+            //Rcpp::Rcout << "Previous time: " << s << " current time: "<< t<<"\n";
             // simple slope rule
             double v_t = 2*(p_t - p_s)/(t - s) - speeds(i, s); 
             
             // Quadratic cost for interval [s, t)
-            Rcpp::Rcout << "s: " << s <<" t: "<<t << " ps: "<<p_s << " pt: "<< p_t <<" v_t: "<<v_t<<"\n";
+            //Rcpp::Rcout << "s: " << s <<" t: "<<t << " ps: "<<p_s << " pt: "<< p_t <<" v_t: "<<v_t<<"\n";
             double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
             
             // Candidate cost (DP recurrence)
             double candidate = value(i, s) + interval_cost + beta;
-            Rcpp::Rcout << "vt = " << v_t << " int cost: " << interval_cost << "candidate " << candidate<< "\n";
+            //Rcpp::Rcout << "vt = " << v_t << " int cost: " << interval_cost << "candidate " << candidate<< "\n";
             if (candidate < current_MIN){
               current_MIN = candidate;
               best_speed = v_t;
@@ -119,6 +122,9 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
             }
           }
         }
+      }
+      if (std::fpclassify(current_MIN) == FP_SUBNORMAL) {
+        current_MIN = 0.0;
       }
       value(j, t) = current_MIN;
       speeds(j, t) = best_speed;
@@ -166,7 +172,11 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
 
   // Reverse the order to chronological (0 → N)
   std::reverse(change_points.begin(), change_points.end());
-
+  //Rcpp::Rcout << " ======================================= \n";
+  //Rcpp::Rcout << " ======================================= \n";
+  //Rcpp::Rcout <<"Change points: " << change_points;
+  //Rcpp::Rcout << " ======================================= \n";
+  //Rcpp::Rcout << " ======================================= \n";
   return value;
 }
 

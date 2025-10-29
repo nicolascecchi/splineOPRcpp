@@ -1,12 +1,13 @@
 
 
 library(splineOP)
-set.seed(5)
+set.seed(51)
 # Example with 5 segments and given accelerations
-K <- 3
+K <- 2
 segments <- generate_segment_lengths(400, K,alpha = rep(100,K))
 accelerations <- rnorm(K)
 result <- generate_Qsplines(segments, accelerations, max1 = TRUE)
+
 #'
 # Inspect results
 result$p  # positions
@@ -17,19 +18,23 @@ result$a  # accelerations
 
 plot_Qspline(result, segments)
 
-#signal <- generate_Qspline_signal(result, segments, noise_sd = 0.05)
+signal <- generate_Qspline_signal(result, segments, noise_sd = 0.05)
 plot(signal, type = "l")
 cumsum(segments)
-
-
 
 dp_matrix_Rcpp(signal, beta = 0, S = 1, data_var = 0.05)
 
 signal <- c(0,1,4,3,-8,-29)
 Rcpp::sourceCpp("./src/QuadraticCost_Rcpp.cpp")
 cost_obj <- new(QuadraticCost, signal)
-cost_obj$segmentcost(2,4,4,-8,4)
+signal[[1]]
 
+for (i in 1:399){
+  print(cost_obj$segmentcost(0,i,signal[[1]],signal[[i]],0))
+}
+
+cost_obj$segmentcost(213,400,-1,0,0.008095)
+segments
 
 n= 1
 L= 1

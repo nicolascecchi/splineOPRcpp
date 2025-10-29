@@ -13,6 +13,7 @@ class Matrix
     size_t rows;
     size_t cols;
     std::vector<T> data;
+    std::vector<int> change_points;
 
   public:
     // Constructor
@@ -21,6 +22,8 @@ class Matrix
     // Element access
     T& operator()(size_t i, size_t j);
     const T& operator()(size_t i, size_t j) const;
+
+    std::vector<int> get_changes() const {return change_points;}
 
     // Dimensions
     size_t nrows() const;
