@@ -9,20 +9,35 @@ class QuadraticCost
   private:
     std::vector<double> y;
     int N;
-
-    // Precomputed cumulative sums depending on y
+    // Precomputed cumulative sums depending on 
     std::vector<double> cumsum_y;
     std::vector<double> cumsum_y2;
     std::vector<double> cumsum_yL1;
     std::vector<double> cumsum_yL2;
+    // Polynomial coefficients and interval length
+    double L;
+    double a;
+    double b;
+    double c;
+    double sum_y;
+    double sum_y2;
+    double sum_yL1;
+    double sum_yL2;
 
-    // Internal helper: Faulhaber sums for equispaced points (0..n-1)
-    static double S1(int n);
-    static double S2(int n);
-    static double S3(int n);
-    static double S4(int n);
-
-  public:
+    public:
+      // getters
+      std::vector<double> get_cusum_y()   const {return cusum_y;}
+      std::vector<double> get_cusum_y2()  const {return cusum_y2;}
+      std::vector<double> get_cusum_yL1() const {return cusum_yL1;}
+      std::vector<double> get_cusum_yL2() const {return cusum_yL2;}
+      double get_L() const {return L};
+      double get_a() const {return a};
+      double get_b() const {return b};
+      double get_c() const {return c};
+      double get_sum_y() const {return sum_y};
+      double get_sum_y2() const {return sum_y2};
+      double get_sum_yL1() const {return sum_yL1};
+      double get_sum_yL2() const {return sum_yL2};
     // Constructor
     explicit QuadraticCost(const std::vector<double>& data);
 

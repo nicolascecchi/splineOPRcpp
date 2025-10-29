@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <stdexcept>
 
+namespace spop{
 template <typename T>
 class Matrix
 {
@@ -59,5 +60,6 @@ size_t Matrix<T>::nrows() const { return rows; }
 template <typename T>
 size_t Matrix<T>::ncols() const { return cols; }
 
-#endif // MATRIX_H
+}
 
+#endif // MATRIX_H

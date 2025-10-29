@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // dp_matrix_Rcpp
-Rcpp::IntegerVector dp_matrix_Rcpp(std::vector<double> data, double beta, int S, int nb_initSpeed, double data_var);
+Rcpp::NumericMatrix dp_matrix_Rcpp(std::vector<double> data, double beta, int S, int nb_initSpeed, double data_var);
 RcppExport SEXP _splineOP_dp_matrix_Rcpp(SEXP dataSEXP, SEXP betaSEXP, SEXP SSEXP, SEXP nb_initSpeedSEXP, SEXP data_varSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -38,9 +38,12 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP _rcpp_module_boot_quadraticcost_module();
+
 static const R_CallMethodDef CallEntries[] = {
     {"_splineOP_dp_matrix_Rcpp", (DL_FUNC) &_splineOP_dp_matrix_Rcpp, 5},
     {"_splineOP_cpp_sum2", (DL_FUNC) &_splineOP_cpp_sum2, 1},
+    {"_rcpp_module_boot_quadraticcost_module", (DL_FUNC) &_rcpp_module_boot_quadraticcost_module, 0},
     {NULL, NULL, 0}
 };
 

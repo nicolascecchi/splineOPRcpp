@@ -1,5 +1,5 @@
 #include "Matrix.h"
 
 // Explicit template instantiation
-template class Matrix<double>;
-template class Matrix<int>;
+template class spop::Matrix<double>;
+template class spop::Matrix<int>;
