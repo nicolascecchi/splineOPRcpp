@@ -28,28 +28,31 @@ dp_matrix_Rcpp(signal, beta = 0, S = 1, data_var = 0.05)
 signal <- c(0,1,4,3,-8,-29)
 Rcpp::sourceCpp("./src/QuadraticCost_Rcpp.cpp")
 cost_obj <- new(QuadraticCost, signal)
-cost_obj$segmentcost(0,2,0,4,4
-                     )
+cost_obj$segmentcost(2,4,4,-8,4)
 
 
-n= 2
-L= 2
-a= 2
-b= 0
-c= 0
-sum_y= 1
-sum_y2= 1
-sum_yL1= 1
-sum_yL2= 1
-sum_L1 =1
-sum_L2 =1
-sum_L3 =1
-sum_L4 =1
+n= 1
+L= 1
+a= -10
+b= 4
+c= 4
+sum_y= 4
+sum_y2= 16
+sum_yL1= 0
+sum_yL2= 32
+sum_L1= 1
+sum_L2= 1
+sum_L3= 1
+sum_L4= 1
 
-# 1. Initialize the variable
-cost <- 0.0
-# 2. Accumulate the values
-cost <- cost + sum_y2
-cost <- cost + (a * a * sum_L4)
-cost <- cost - (2.0 * a * sum_yL2)
+cost = 0.0
+cost = cost+ a * a * sum_L4 / 4.;
+cost = cost + a * b * sum_L3;
+cost = cost + (a * c + b * b) * sum_L2;
+cost = cost + 2.0 * b * c * sum_L1;
+cost = cost + c * c * n;
+cost = cost -  a * sum_yL2;
+cost = cost - 2.0 * b * sum_yL1;
+cost = cost - 2.0 * c * sum_y;
+cost = cost + sum_y2;
 cost
