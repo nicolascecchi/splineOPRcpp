@@ -41,7 +41,7 @@ class SplineOP
 
         //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
-        //spop::Matrix<double> get_speeds() const {return speeds;}
+        spop::Matrix<double> get_speeds() const {return speeds;}
         //spop::Matrix<double> get_costs() const {return costs;}
         //spop::Matrix<double> get_initspeeds() const {return initspeeds;}
         //spop::Matrix<double> get_states() const {return states;}
