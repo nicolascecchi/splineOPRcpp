@@ -4,7 +4,6 @@
 
 
 //====================================================================
-// THE RCPP MODULE (The "Glue" Code)
 // This is what exposes your C++ class to R.
 //====================================================================
 RCPP_MODULE(quadraticcost_module) {
@@ -13,9 +12,6 @@ RCPP_MODULE(quadraticcost_module) {
     Rcpp::class_<QuadraticCost>("QuadraticCost")
 
     // 1. Expose the constructor
-    // This tells R that new(Accumulator, 10.0) should call the
-    // C++ constructor that takes a 'double'.
-    // We also name the argument "start_value" for R users.
         .constructor<std::vector<double>>("data")
 
     // 2. Expose the methods

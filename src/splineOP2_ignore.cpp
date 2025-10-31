@@ -1,3 +1,4 @@
+#if (NEVER_DEFINED_FLAG)
 #include <Rcpp.h>
 #include <iostream>
 #include <algorithm>
@@ -51,14 +52,14 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
   // ---------------------------------------------------------------------------
   // Allocate DP matrices
   // ---------------------------------------------------------------------------
-  spop::Matrix<double> value(S, N, std::numeric_limits<double>::infinity());
+  spop::Matrix<double> costs(S, N, std::numeric_limits<double>::infinity());
   spop::Matrix<int> argmin_i(S, N, -1);
   spop::Matrix<int> argmin_s(S, N, -1);
 
   // Initialization (first column)
   for (int j = 0; j < S; j++)
   {
-    value(j, 0) = 0;  // random initial cost for 0 data point
+    costs(j, 0) = 0;  // random initial cost for 0 data point
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -112,7 +113,7 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
             double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
             
             // Candidate cost (DP recurrence)
-            double candidate = value(i, s) + interval_cost + beta;
+            double candidate = costs(i, s) + interval_cost + beta;
             //Rcpp::Rcout << "vt = " << v_t << " int cost: " << interval_cost << "candidate " << candidate<< "\n";
             if (candidate < current_MIN){
               current_MIN = candidate;
@@ -126,7 +127,7 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
       if (std::fpclassify(current_MIN) == FP_SUBNORMAL) {
         current_MIN = 0.0;
       }
-      value(j, t) = current_MIN;
+      costs(j, t) = current_MIN;
       speeds(j, t) = best_speed;
       argmin_i(j, t) = best_i;
       argmin_s(j, t) = best_s;
@@ -145,9 +146,9 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
   int best_final_state = -1;
   for (int j = 0; j < S; j++)
   {
-    if (value(j, N - 1) < min_final)
+    if (costs(j, N - 1) < min_final)
     {
-      min_final = value(j, N - 1);
+      min_final = costs(j, N - 1);
       best_final_state = j;
     }
   }
@@ -177,7 +178,8 @@ spop::Matrix<double> dp_matrix(const std::vector<double>& data,
   //Rcpp::Rcout <<"Change points: " << change_points;
   //Rcpp::Rcout << " ======================================= \n";
   //Rcpp::Rcout << " ======================================= \n";
-  return value;
+  return costs;
 }
 
+#endif
 

@@ -1,6 +1,16 @@
 
 
 library(splineOP)
+
+signal <- c(0,1,4,3,-8,-29)
+Rcpp::sourceCpp("./src/QuadraticCost_Rcpp.cpp")
+cost_obj <- new(QuadraticCost, signal)
+cost_obj$segmentcost(0,4,0,0,0)
+cost_obj$a
+
+
+
+
 set.seed(51)
 # Example with 5 segments and given accelerations
 K <- 2
@@ -24,14 +34,9 @@ cumsum(segments)
 
 dp_matrix_Rcpp(signal, beta = 0, S = 1, data_var = 0.05)
 
-signal <- c(0,1,4,3,-8,-29)
-Rcpp::sourceCpp("./src/QuadraticCost_Rcpp.cpp")
-cost_obj <- new(QuadraticCost, signal)
-signal[[1]]
+i = 1
+cost_obj$segmentcost(0,i,0,signal[[i]],-0.017485296)
 
-for (i in 1:399){
-  print(cost_obj$segmentcost(0,i,signal[[1]],signal[[i]],0))
-}
 
 cost_obj$segmentcost(213,400,-1,0,0.008095)
 segments

@@ -1,8 +1,9 @@
+#if (NEVER_DEFINED_FLAG)
 #include <Rcpp.h>
 #include "splineOP.h"
 #include "Matrix.h"
 #include "Rcpp_Wrap_Specialization.h"
-// [[Rcpp::export]]
+
 Rcpp::NumericMatrix dp_matrix_Rcpp(std::vector<double> data,
                                    double beta,
                                    int S = 10,
@@ -15,3 +16,5 @@ Rcpp::NumericMatrix dp_matrix_Rcpp(std::vector<double> data,
   // Return it to R
   return Rcpp::wrap(result);
 }
+
+#endif
