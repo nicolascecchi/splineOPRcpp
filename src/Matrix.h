@@ -56,11 +56,12 @@ Matrix<T>::Matrix(const Matrix<T>& other)
       data_(other.data_) {} // body can be empty, everything is already handled
 
 // Element access
+// Column-major access to interact easily with R
 template <typename T>
-T& Matrix<T>::operator()(size_t i, size_t j) { return data_[i * cols + j]; }
+T& Matrix<T>::operator()(size_t i, size_t j) { return data_[j * rows + i]; }
 
 template <typename T>
-const T& Matrix<T>::operator()(size_t i, size_t j) const { return data_[i * cols + j];}
+const T& Matrix<T>::operator()(size_t i, size_t j) const { return data_[j * rows + i];}
 
 // Getters to member variables
 template <typename T>

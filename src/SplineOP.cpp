@@ -22,7 +22,7 @@ SplineOP::SplineOP(std::vector<double>  data
 
     ,changepoints(1,static_cast<int>(data.size())) // place holder, will be superseeded afterwards
     {
-        //states = generate_states(nstates, data, data_var, seed);
+        this->states = generate_states(nstates, data, data_var, seed);
     }
 
 spop::Matrix<double> SplineOP::generate_states(size_t nstates,const std::vector<double>& data,double data_var, int seed){
