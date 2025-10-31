@@ -13,8 +13,6 @@ class Matrix
     size_t rows;
     size_t cols;
     std::vector<T> data;
-    //std::vector<int> change_points;
-
   public:
     // Constructors
     // 1. Default constructor
@@ -27,14 +25,12 @@ class Matrix
     // Element access
     T& operator()(size_t i, size_t j);
     const T& operator()(size_t i, size_t j) const;
-
-    // Resize method
-    //void resize(size_t nrows, size_t ncols, T initial_value);
-    //std::vector<int> get_changes() const {return change_points;}
+    
 
     // Dimensions
     size_t nrows() const;
     size_t ncols() const;
+    std::vector<T> get_data() const;
 };
 
 // Implementation (must be in header for templates)
@@ -52,28 +48,23 @@ Matrix<T>::Matrix(const Matrix<T>& other)
 
 // Element access
 template <typename T>
-T& Matrix<T>::operator()(size_t i, size_t j)
-{
-  //if (i >= rows || j >= cols)
-  //  throw std::out_of_range("Matrix index out of range");
-  return data[i * cols + j];
-}
+T& Matrix<T>::operator()(size_t i, size_t j) { return data[i * cols + j]; }
 
 template <typename T>
-const T& Matrix<T>::operator()(size_t i, size_t j) const
-{
-  //if (i >= rows || j >= cols)
-  //  throw std::out_of_range("Matrix index out of range");
-  return data[i * cols + j];
-}
+const T& Matrix<T>::operator()(size_t i, size_t j) const { return data[i * cols + j];}
 
-// Dimensions
+// Getters to member variables
 template <typename T>
 size_t Matrix<T>::nrows() const { return rows; }
 
 template <typename T>
 size_t Matrix<T>::ncols() const { return cols; }
 
+template <typename T>
+std::vector<T> Matrix<T>::get_data() const { return data; }
 }
 
-#endif // MATRIX_H
+
+
+
+#endif 

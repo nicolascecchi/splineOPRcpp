@@ -5,7 +5,7 @@
 #include "Faulhaber.h"
 
 // Constructor: precompute cumulative sums depending on y
-QuadraticCost::QuadraticCost(const std::vector<double>& data)
+QuadraticCost::QuadraticCost(std::vector<double> data)
   : y(data),
     N(static_cast<int>(data.size())),
     cumsum_y(N+1, 0.0),

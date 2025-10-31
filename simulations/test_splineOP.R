@@ -1,9 +1,16 @@
 
 
 library(splineOP)
+splineOP::
 
 signal <- c(0,1,4,3,-8,-29)
-Rcpp::sourceCpp("./src/QuadraticCost_Rcpp.cpp")
+sop <- SplineOP(signal, 2, 2, 2, 2)
+
+Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
+spop <- new(SplineOP, signal, 2, 2,2,2)
+spop
+
+
 cost_obj <- new(QuadraticCost, signal)
 cost_obj$segmentcost(0,4,0,0,0)
 cost_obj$a

@@ -11,6 +11,7 @@
 #include "Matrix.h" // for storing values in DP loo
 #include "QuadraticCost.h" // for computing the cost 
 #include <optional> // To avoid initializing matrices at construction
+
 class SplineOP
 {
     // private methods and attributes
@@ -18,7 +19,7 @@ class SplineOP
         int nobs; // Size of the data --> Change to npoints for being more explicit?
         size_t nstates;
         size_t nspeeds;
-        QuadraticCost qc; // Cost object to compute intervals
+        //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
 
         spop::Matrix<double> speeds; // best speed holder
         spop::Matrix<double> costs;  // matrix of costs
@@ -28,6 +29,8 @@ class SplineOP
         spop::Matrix<int> argmin_i; // Store INDEX of best previous state
         spop::Matrix<int> argmin_s; // Store best previous time
         
+        QuadraticCost qc;
+        
         std::vector<int> changepoints;
         spop::Matrix<double> generate_states(size_t nstates, const std::vector<double>& data, double data_var, int seed); // State generator
         void backtrack_changes();
@@ -36,16 +39,16 @@ class SplineOP
         //void set_speeds(const spop::Matrix<double>& speeds);
         void predict(double beta); // predicts with a given penalty
 
-        // Getters
+        //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
-        spop::Matrix<double> get_speeds() const {return speeds;}
-        spop::Matrix<double> get_costs() const {return costs;}
-        spop::Matrix<double> get_initspeeds() const {return initspeeds;}
-        spop::Matrix<double> get_states() const {return states;}
-        spop::Matrix<int> get_argmin_i() const {return argmin_i;}
-        spop::Matrix<int> get_argmin_s() const {return argmin_s;}
+        //spop::Matrix<double> get_speeds() const {return speeds;}
+        //spop::Matrix<double> get_costs() const {return costs;}
+        //spop::Matrix<double> get_initspeeds() const {return initspeeds;}
+        //spop::Matrix<double> get_states() const {return states;}
+        //spop::Matrix<int> get_argmin_i() const {return argmin_i;}
+        //spop::Matrix<int> get_argmin_s() const {return argmin_s;}
     //constructor
-    explicit SplineOP(const std::vector<double>& data
+    explicit SplineOP(std::vector<double>  data
                       ,size_t nstates
                       ,size_t nspeeds
                       ,double data_var

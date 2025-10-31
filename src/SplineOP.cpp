@@ -2,30 +2,28 @@
 #include "Matrix.h"
 
 // Define the construction
-SplineOP::SplineOP(const std::vector<double>& data
+SplineOP::SplineOP(std::vector<double>  data
                 ,size_t nstates
                 ,size_t nspeeds
                 ,double data_var
                 ,int seed):
-     nobs{static_cast<int>(data.size())}
+    nobs{static_cast<int>(data.size())}
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
-    ,qc(data)
 
     ,speeds(nstates, data.size(), 0.0)
     ,costs(nstates, data.size(), std::numeric_limits<double>::infinity())
     ,initspeeds(nspeeds,size_t{1},-0.017485295)
-    ,states(this->generate_states(nstates, data, data_var, seed))
+    ,states(nstates, data.size(), 0.) // place holder for initialization
 
     ,argmin_i(nstates, data.size(), -1)
     ,argmin_s(nstates, data.size(), -1)  
+    ,qc(data)
 
-    ,changepoints{}
-    {}
-    // Get states
-    // states = generate_states(nstates, data, data_var, seed);
-    // Set up the cost object and precompute the cumulative sums
-
+    ,changepoints(1,static_cast<int>(data.size())) // place holder, will be superseeded afterwards
+    {
+        //states = generate_states(nstates, data, data_var, seed);
+    }
 
 spop::Matrix<double> SplineOP::generate_states(size_t nstates,const std::vector<double>& data,double data_var, int seed){
     spop::Matrix<double> states(nstates, this->nobs, 0.0);

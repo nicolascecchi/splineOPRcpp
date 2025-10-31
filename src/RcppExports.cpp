@@ -11,24 +11,10 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// cpp_sum2
-double cpp_sum2(NumericVector v);
-RcppExport SEXP _splineOP_cpp_sum2(SEXP vSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type v(vSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_sum2(v));
-    return rcpp_result_gen;
-END_RCPP
-}
 
-RcppExport SEXP _rcpp_module_boot_quadraticcost_module();
 RcppExport SEXP _rcpp_module_boot_splineop();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_splineOP_cpp_sum2", (DL_FUNC) &_splineOP_cpp_sum2, 1},
-    {"_rcpp_module_boot_quadraticcost_module", (DL_FUNC) &_rcpp_module_boot_quadraticcost_module, 0},
     {"_rcpp_module_boot_splineop", (DL_FUNC) &_rcpp_module_boot_splineop, 0},
     {NULL, NULL, 0}
 };
