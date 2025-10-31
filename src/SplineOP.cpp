@@ -108,13 +108,11 @@ void SplineOP::predict(double beta){
 }
 
 void SplineOP::backtrack_changes(){
-    std::vector<int> changepoints;
-    changepoints.push_back(nobs - 1);  // last time index is always a change point
     // Find best final state
     double min_final = std::numeric_limits<double>::infinity();
     int best_final_state = -1;
     for (size_t j = 0; j < this->nstates; j++){
-        if (costs(j, nobs - 1) < min_final)
+        if (costs(j, this->nobs - 1) < min_final)
         {
         min_final = costs(j, nobs - 1);
         best_final_state = j;
@@ -142,3 +140,6 @@ void SplineOP::backtrack_changes(){
     std::reverse(changepoints.begin(), changepoints.end());
 }
 
+double SplineOP::get_segment_cost(int s, int t, double p_s, double p_t, double v_s){
+    return this->qc.quadratic_cost_interval(s, t, p_s, p_t, v_s);
+    }

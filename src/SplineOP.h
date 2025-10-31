@@ -47,7 +47,7 @@ class SplineOP
         spop::Matrix<double> get_states() const {return states;}
         spop::Matrix<int> get_argmin_i() const {return argmin_i;}
         spop::Matrix<int> get_argmin_s() const {return argmin_s;}
-        //float compute_cost() // compute a cost with given parameters
+        double get_segment_cost(int s, int t, double p_s, double p_t, double v_s); // compute a cost with given parameters
     //constructor
     explicit SplineOP(std::vector<double>  data
                       ,size_t nstates

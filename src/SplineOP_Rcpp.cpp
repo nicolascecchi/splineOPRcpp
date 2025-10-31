@@ -30,8 +30,9 @@ RCPP_MODULE(splineop) {
         .property("get_initspeeds", &SplineOP::get_initspeeds) 
         .property("get_states", &SplineOP::get_states) 
         .property("get_argmin_i", &SplineOP::get_argmin_i) 
-        .property("get_argmin_s", &SplineOP::get_argmin_s) 
+        .property("get_argmin_s", &SplineOP::get_argmin_s)
 
+        .method("get_segment_cost", &SplineOP::get_segment_cost) 
         .method("predict", &SplineOP::predict, 
             "Predicts changepoints with given penalty");
         

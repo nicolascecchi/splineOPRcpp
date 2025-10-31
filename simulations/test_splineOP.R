@@ -3,12 +3,15 @@
 library(splineOP)
 signal <- c(0,1,4,3,-8,-29)
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
-spop <- new(SplineOP, signal, 2, 2,2,2)
+spop <- new(SplineOP, signal, 1, 1,0,0)
 spop$get_states
-
 spop$get_initspeeds
 spop$get_changepoints
 spop$get_speeds
+spop$predict(1.0)
+spop$get_changepoints
+
+
 
 cost_obj <- new(QuadraticCost, signal)
 cost_obj$segmentcost(0,4,0,0,0)
