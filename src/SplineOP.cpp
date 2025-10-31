@@ -47,62 +47,61 @@ spop::Matrix<double> SplineOP::generate_states(size_t nstates,const std::vector<
 
 void SplineOP::predict(double beta){
     this->changepoints= std::vector<int>(1,this->nobs-1); // reinitialize vector for each fit
+    this->costs = spop::Matrix<double>(nstates
+                                    ,static_cast<size_t>(nobs)
+                                    ,std::numeric_limits<double>::infinity());
+    
     for (size_t j = 0; j < this->nstates; j++){
-    this->costs(j, 0) = 0;  // random initial cost for 0 data point
-    }
-    for (size_t t = 1; t < static_cast<size_t>(nobs); t++)
-    {
-        for (size_t j = 0; j < nstates; j++)
-        { // current state
-        double current_MIN = std::numeric_limits<double>::infinity();
-        double best_speed;
-        int best_i = -1;
-        int best_s = -1;
-
-        for (size_t s = 0; s < t; s++){ // previous time
-            for (size_t i = 0; i < nstates; i++){ // previous state
-            // Fix start and end position in time and space
-            double p_s = states(i, s);
-            double p_t = states(j, t);
-            if (s == 0){
-                for (size_t j = 0; j < this->nspeeds; j++){ // init speed loop
-                double v_t = 2*(p_t - p_s)/(t - s) - initspeeds(j,0); // simple slope rule
-                // Quadratic cost for interval [s, t)
-                double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
-                // Candidate cost (DP recurrence)
-                double candidate = interval_cost;
-
-                if (candidate < current_MIN){
-                    current_MIN = candidate;
-                    best_speed = v_t;
-                    best_i = i;
-                    best_s = s;
-                }
-                }
-            }
-            else{
-                // compute speed
-                double v_t = 2*(p_t - p_s)/(t - s) - speeds(i, s); 
-                
-                // Quadratic cost for interval [s, t)
-                double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
-                
-                // Candidate cost (DP recurrence)
-                double candidate = costs(i, s) + interval_cost + beta;
-                if (candidate < current_MIN){
-                current_MIN = candidate;
-                best_speed = v_t;
-                best_i = i;
-                best_s = s;
+        this->costs(j, 0) = 0; // random initial cost for 0 data point
+    }  
+    for (size_t t = 1; t < static_cast<size_t>(nobs); t++){
+        for (size_t j = 0; j < nstates; j++){ // current state
+            double current_MIN = std::numeric_limits<double>::infinity();
+            double best_speed;
+            int best_i = -1;
+            int best_s = -1;
+            for (size_t s = 0; s < t; s++){ // previous time
+                for (size_t i = 0; i < nstates; i++){ // previous state
+                    // Fix start and end position in time and space
+                    double p_s = states(i, s);
+                    double p_t = states(j, t);
+                    if (s == 0){
+                        for (size_t j = 0; j < this->nspeeds; j++){ // init speed loop
+                            double v_t = 2*(p_t - p_s)/(t - s) - initspeeds(j,0); // simple slope rule
+                            // Quadratic cost for interval [s, t)
+                            double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
+                            // Candidate cost (DP recurrence)
+                            double candidate = interval_cost;
+                            if (candidate < current_MIN){
+                                current_MIN = candidate;
+                                best_speed = v_t;
+                                best_i = i;
+                                best_s = s;
+                            }
+                        }
+                    }
+                    else{
+                        // compute speed
+                        double v_t = 2*(p_t - p_s)/(t - s) - speeds(i, s); 
+                        
+                        // Quadratic cost for interval [s, t)
+                        double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
+                        
+                        // Candidate cost (DP recurrence)
+                        double candidate = costs(i, s) + interval_cost + beta;
+                        if (candidate < current_MIN){
+                            current_MIN = candidate;
+                            best_speed = v_t;
+                            best_i = i;
+                            best_s = s;
+                        }
+                    }
                 }
             }
-            }
-        }
-        
-        costs(j, t) = current_MIN;
-        speeds(j, t) = best_speed;
-        argmin_i(j, t) = best_i;
-        argmin_s(j, t) = best_s;
+            costs(j, t) = current_MIN;
+            speeds(j, t) = best_speed;
+            argmin_i(j, t) = best_i;
+            argmin_s(j, t) = best_s;
         }
     }
     SplineOP::backtrack_changes();
