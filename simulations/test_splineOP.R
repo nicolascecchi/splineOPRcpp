@@ -5,7 +5,7 @@ signal <- c(0,1,4,3,-8,-29)
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
 spop <- new(SplineOP, signal, 2, 2,2,2)
 spop$get_changepoints
-
+spop$get_speeds
 
 cost_obj <- new(QuadraticCost, signal)
 cost_obj$segmentcost(0,4,0,0,0)
