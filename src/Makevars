@@ -1,8 +1,0 @@
-# src/Makevars
-
-# List ONLY the files you want to compile. 
-PKG_CXX_SOURCES = Faulhaber.cpp \
-                  Matrix.cpp \
-                  QuadraticCost.cpp \
-                  splineOP.cpp 
-                  

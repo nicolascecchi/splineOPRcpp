@@ -2,12 +2,6 @@
 #include "SplineOP.h"
 #include "Matrix.h"
 
-template<> 
-struct Rcpp::traits::is_wrapable<spop::Matrix<double>> : public Rcpp::traits::true_type {};
-
-template<> 
-struct Rcpp::traits::is_wrapable<spop::Matrix<int>> : public Rcpp::traits::true_type {};
-
 //====================================================================
 // This is what exposes your C++ class to R.
 //====================================================================
