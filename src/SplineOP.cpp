@@ -20,7 +20,7 @@ SplineOP::SplineOP(std::vector<double>  data
     ,argmin_s(nstates, data.size(), -1)  
     ,qc(data)
 
-    ,changepoints(1,static_cast<int>(data.size())) // place holder, will be superseeded afterwards
+    ,changepoints(1,static_cast<int>(data.size())-1) // place holder, will be superseeded afterwards
     {
         this->states = generate_states(nstates, data, data_var, seed);
     }
@@ -46,6 +46,7 @@ spop::Matrix<double> SplineOP::generate_states(size_t nstates,const std::vector<
 }
 
 void SplineOP::predict(double beta){
+    this->changepoints= std::vector<int>(1,this->nobs-1); // reinitialize vector for each fit
     for (size_t j = 0; j < this->nstates; j++){
     this->costs(j, 0) = 0;  // random initial cost for 0 data point
     }
