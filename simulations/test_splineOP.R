@@ -1,17 +1,42 @@
 
 
 library(splineOP)
-signal <- c(0,1,4,3,-8,-29)
+set.seed(51)
+K <- 5
+segments <- generate_segment_lengths(1000, K,alpha = rep(100,K))
+accelerations <- c(5,-3,3,-4,6)
+result <- generate_Qsplines(segments, accelerations, max1 = TRUE)
+result$p  # positions
+result$v  # velocities
+result$a  # accelerations
+plot_Qspline(result, segments)
+signal <- generate_Qspline_signal(result, segments, noise_sd = 0.025)
+plot(signal, type = "l")
+cumsum(segments)
+
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
-spop <- new(SplineOP, signal, 1, 1,0,0)
-spop$get_states
-spop$get_initspeeds
+spop <- new(SplineOP, signal, 5, 1,0.025,5)
+spop$predict(0.025)
 spop$get_changepoints
+cumsum(segments)
+
+
+spop$get_segment_cost(0,2,0,4,0)
+spop$get_segment_cost(2,3,4,3,4.01748)
+
+
+spop$get_segment_cost(2,4,4,-8,4.01748)
+spop$get_segment_cost(2,5,4,-29,4.01748)
+
+
+spop$predict(250.)
+spop$get_costs
 spop$get_speeds
-spop$predict(1.0)
+
 spop$get_changepoints
 
-
+spop$get_argmin_i
+spop$get_argmin_s
 
 cost_obj <- new(QuadraticCost, signal)
 cost_obj$segmentcost(0,4,0,0,0)

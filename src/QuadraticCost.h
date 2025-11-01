@@ -43,7 +43,7 @@ class QuadraticCost
     explicit QuadraticCost(std::vector<double> data);
 
     // Compute quadratic cost on interval [s, t) for given (p_s, p_t, v_t)
-    double quadratic_cost_interval(int s, int t, double p_s, double p_t, double v_t) const;
+    double interval_cost(int s, int t, double p_s, double p_t, double v_t) const;
 };
 
 #endif // QUADRATIC_COST_H

@@ -1,5 +1,6 @@
 #include "SplineOP.h"
 #include "Matrix.h"
+#include "SpeedEstimator.h"
 
 // Define the construction
 SplineOP::SplineOP(std::vector<double>  data
@@ -11,9 +12,9 @@ SplineOP::SplineOP(std::vector<double>  data
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
 
-    ,speeds(nstates, data.size(), 0.0)
+    ,speeds(nstates, data.size(), -1)
     ,costs(nstates, data.size(), std::numeric_limits<double>::infinity())
-    ,initspeeds(nspeeds,size_t{1},-0.017485295)
+    ,initspeeds(nspeeds,0.0)
     ,states(nstates, data.size(), 0.) // place holder for initialization
 
     ,argmin_i(nstates, data.size(), -1)
@@ -23,6 +24,7 @@ SplineOP::SplineOP(std::vector<double>  data
     ,changepoints(1,static_cast<int>(data.size())-1) // place holder, will be superseeded afterwards
     {
         this->states = generate_states(nstates, data, data_var, seed);
+        this->initspeeds = EsimateSpeeds(data, std::vector<int>{5,10});
     }
 
 spop::Matrix<double> SplineOP::generate_states(size_t nstates,const std::vector<double>& data,double data_var, int seed){
@@ -46,7 +48,8 @@ spop::Matrix<double> SplineOP::generate_states(size_t nstates,const std::vector<
 }
 
 void SplineOP::predict(double beta){
-    this->changepoints= std::vector<int>(1,this->nobs-1); // reinitialize vector for each fit
+    // reinitialize changepoints and costs for new fit (small overhead for first time)
+    this->changepoints= std::vector<int>(1,this->nobs-1); 
     this->costs = spop::Matrix<double>(nstates
                                     ,static_cast<size_t>(nobs)
                                     ,std::numeric_limits<double>::infinity());
@@ -54,24 +57,33 @@ void SplineOP::predict(double beta){
     for (size_t j = 0; j < this->nstates; j++){
         this->costs(j, 0) = 0; // random initial cost for 0 data point
     }  
-    for (size_t t = 1; t < static_cast<size_t>(nobs); t++){
+    // Loop over data
+    for (size_t t = 1; t < static_cast<size_t>(nobs); t++){ // current last point
+        //Rcpp::Rcout << "====================== new end point =========================" << std::endl;
         for (size_t j = 0; j < nstates; j++){ // current state
+            double p_t = states(j, t); // Fix final position
             double current_MIN = std::numeric_limits<double>::infinity();
             double best_speed;
             int best_i = -1;
             int best_s = -1;
-            for (size_t s = 0; s < t; s++){ // previous time
+            // Find the best solution (state j,time t)
+            //Rcpp::Rcout << "Evalute best solution for t = " << t << std::endl;
+            for (size_t s = 0; s < t; s++){ // previous times
+                Rcpp::checkUserInterrupt(); // allow user interruption
                 for (size_t i = 0; i < nstates; i++){ // previous state
                     // Fix start and end position in time and space
-                    double p_s = states(i, s);
-                    double p_t = states(j, t);
+                    double p_s = states(i, s); // Get starting state position
                     if (s == 0){
-                        for (size_t j = 0; j < this->nspeeds; j++){ // init speed loop
-                            double v_t = 2*(p_t - p_s)/(t - s) - initspeeds(j,0); // simple slope rule
+                        //Rcpp::Rcout << "Solution without change" << std::endl;
+                        for (size_t spdidx = 0; spdidx < this->nspeeds; spdidx++){ // init speed loop
+                            double v_s = initspeeds[spdidx];
+                            double v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
                             // Quadratic cost for interval [s, t)
-                            double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
+                            double interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                             // Candidate cost (DP recurrence)
                             double candidate = interval_cost;
+                            //Rcpp::Rcout << "Cost =" << interval_cost << std::endl;  
+                            //Rcpp::Rcout << "s "<< s << " t: " << t << " p_s: "<<  p_s << " p_t: "<< p_t << "v_t: "<< v_t << std::endl;
                             if (candidate < current_MIN){
                                 current_MIN = candidate;
                                 best_speed = v_t;
@@ -82,13 +94,16 @@ void SplineOP::predict(double beta){
                     }
                     else{
                         // compute speed
-                        double v_t = 2*(p_t - p_s)/(t - s) - speeds(i, s); 
-                        
+                        //Rcpp::Rcout << "Changepoint time : " << s << std::endl;
+                        double v_s = speeds(i, s);
+                        double v_t = 2*(p_t - p_s)/(t - s) - v_s; 
                         // Quadratic cost for interval [s, t)
-                        double interval_cost = qc.quadratic_cost_interval(s, t, p_s, p_t, v_t);
-                        
+                        double interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                         // Candidate cost (DP recurrence)
                         double candidate = costs(i, s) + interval_cost + beta;
+                        //Rcpp::Rcout << "Cost = cost(" << i << ", " << s << ")+ invtv cost + beta" << std::endl;
+                        //Rcpp::Rcout << candidate << " = " << costs(i, s) << " + " << interval_cost << " + " << beta <<std::endl;  
+                        
                         if (candidate < current_MIN){
                             current_MIN = candidate;
                             best_speed = v_t;
@@ -141,5 +156,5 @@ void SplineOP::backtrack_changes(){
 }
 
 double SplineOP::get_segment_cost(int s, int t, double p_s, double p_t, double v_s){
-    return this->qc.quadratic_cost_interval(s, t, p_s, p_t, v_s);
+    return this->qc.interval_cost(s, t, p_s, p_t, v_s);
     }

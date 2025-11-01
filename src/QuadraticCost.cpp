@@ -28,7 +28,7 @@ QuadraticCost::QuadraticCost(std::vector<double> data)
 }
 
 // --- Compute cost C_{s:t}(p_s, p_t, v_t) ---
-double QuadraticCost::quadratic_cost_interval(int s, int t, double p_s, double p_t, double v_s) const
+double QuadraticCost::interval_cost(int s, int t, double p_s, double p_t, double v_s) const
 {
   assert(t > s && s >= 0 && t <= N);
   int n = t - s;
@@ -65,21 +65,7 @@ double QuadraticCost::quadratic_cost_interval(int s, int t, double p_s, double p
   cost -= 2.0 * b * sum_yL1;
   cost -= 2.0 * c * sum_y;
   cost += sum_y2;
-
-  //Rcpp::Rcout << "n " << n << " " << "\n";
-  //Rcpp::Rcout << "L " << L << " " << "\n";
-  //Rcpp::Rcout << "a " << a << " " << "\n";
-  //Rcpp::Rcout << "b " << b << " " << "\n";
-  //Rcpp::Rcout << "c " << c << " " << "\n";
-  //Rcpp::Rcout << "sum_y " << sum_y << " " << "\n";
-  //Rcpp::Rcout << "sum_y2 " << sum_y2 << " " << "\n";
-  //Rcpp::Rcout << "sum_yL1 " << sum_yL1 << " " << "\n";
-  //Rcpp::Rcout << "sum_yL2 " << sum_yL2 << " " << "\n";
-  //Rcpp::Rcout << "sum_L1 " << sum_L1 << " " << "\n";
-  //Rcpp::Rcout << "sum_L2 " << sum_L2 << " " << "\n";
-  //Rcpp::Rcout << "sum_L3 " << sum_L3 << " " << "\n";
-  //Rcpp::Rcout << "sum_L4 " << sum_L4 << " " << "\n";
-
+  cost /=n;
   return cost;
 }
 

@@ -47,17 +47,9 @@ RCPP_MODULE(splineop) {
         .property("get_cumsum_yL2", &QuadraticCost::get_cumsum_yL2)
         // .property("get_", &QuadraticCost::get_)
         
-        .method("segmentcost", &QuadraticCost::quadratic_cost_interval, 
+        .method("segmentcost", &QuadraticCost::interval_cost, 
             "Adds a number to the accumulator");
     
-    //Rcpp::class_<spop::Matrix<double>>("MatrixDouble")
-    //    .constructor<size_t, size_t, double>() 
-    //    //expose other methods
-    //    ; 
-    //Rcpp::class_<spop::Matrix<int>>("MatrixInt")
-    //    .constructor<size_t, size_t, int>()
-    //    //expose other methods
-    //    ;
             
     }
 
