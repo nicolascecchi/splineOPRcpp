@@ -1,52 +1,57 @@
 #include <cmath> // Required for std::pow
-#include "QuadraticCost.h"
 #include <cassert>
 #include <Rcpp.h>
 #include "Faulhaber.h"
+#include <RcppEigen.h>
+#include "QuadraticCost.h"
+
 
 // Constructor: precompute cumulative sums depending on y
-QuadraticCost::QuadraticCost(std::vector<double> data)
-  : y(data),
-    N(static_cast<int>(data.size())),
-    cumsum_y(N+1, 0.0),
-    cumsum_y2(N+1, 0.0),
-    cumsum_yL1(N+1, 0.0),
-    cumsum_yL2(N+1, 0.0)
-{
-  double yi;
-  double I;
-  for (int i = 0; i < N; ++i)
+QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
+  : y(data.rows(), data.cols()),
+    nobs{data.cols()},
+    ndims{data.rows()},
+    // Folowing are 0-initialized by default
+    cumsum_y(ndims,nobs+1),
+    cumsum_y2(ndims,nobs+1),
+    cumsum_yL1(ndims,nobs+1),
+    cumsum_yL2(ndims,nobs+1){
+  // Fill cumsum one dimension at a time
+  std::cout << "Nobs : " << nobs << " Ndims : " << ndims << std::endl;
+  y = data;
+  for (Eigen::Index j = 0; j < ndims; ++j)  // Loop over dimensions
   {
-    yi = y[i];
-    I = i; // equispaced, L_i = i
-
-    cumsum_y[i+1]    = cumsum_y[i]    + yi;
-    cumsum_y2[i+1]   = cumsum_y2[i]   + yi * yi;
-    cumsum_yL1[i+1]  = cumsum_yL1[i]  + yi * I;
-    cumsum_yL2[i+1]  = cumsum_yL2[i]  + yi * I * I;
+    for (Eigen::Index i = 0; i < nobs; ++i) // start at 1 since first is dummy at value=0 
+    {
+      cumsum_y(j,i+1)    = cumsum_y(j,i)    + y(j,i);
+      cumsum_y2(j,i+1)   = cumsum_y2(j,i)   + y(j,i) * y(j,i);
+      cumsum_yL1(j,i+1)  = cumsum_yL1(j,i)  + y(j,i) * i;
+      cumsum_yL2(j,i+1)  = cumsum_yL2(j,i)  + y(j,i) * i * i;
+    }
   }
+  std::cout << "End QC initialization" << std::endl;
 }
 
 // --- Compute cost C_{s:t}(p_s, p_t, v_t) ---
-double QuadraticCost::interval_cost(int s, int t, double p_s, double p_t, double v_s) const
+double QuadraticCost::interval_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s) const
 {
-  assert(t > s && s >= 0 && t <= N);
+  assert(t > s && s >= 0 && t <= nobs);
   int n = t - s;
 
   // Coefficients of the quadratic p(x) = a(x - x_s)^2 + b(x - x_s) + c
   double L = static_cast<double>(n);
-  double a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
-  double b = v_s;
-  double c = p_s;
+  Eigen::VectorXd a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
+  Eigen::VectorXd b = v_s;
+  Eigen::VectorXd c = p_s;
 
   // Retrieve y-based sums from cumulative arrays.
   // These are effectively cusum[t-1] - cusum[s-1] 
   // when we think our mathematical cost function
-  double sum_y    = cumsum_y[t]    - cumsum_y[s];
-  double sum_y2   = cumsum_y2[t]   - cumsum_y2[s];
-  double sum_yL1  = (cumsum_yL1[t]  - cumsum_yL1[s]) - (s * sum_y);
-  double aux = (cumsum_yL1[t]  - cumsum_yL1[s]);
-  double sum_yL2  = (cumsum_yL2[t]  - cumsum_yL2[s])-2*s*aux+std::pow(s,2)*sum_y;
+  Eigen::VectorXd sum_y    = cumsum_y.col(t)    - cumsum_y.col(s);
+  Eigen::VectorXd sum_y2   = cumsum_y2.col(t)   - cumsum_y2.col(s);
+  Eigen::VectorXd sum_yL1  = (cumsum_yL1.col(t)  - cumsum_yL1.col(s)) - (s * sum_y);
+  Eigen::VectorXd aux = (cumsum_yL1.col(t)  - cumsum_yL1.col(s));
+  Eigen::VectorXd sum_yL2  = (cumsum_yL2.col(t)  - cumsum_yL2.col(s))-2*s*aux+std::pow(s,2)*sum_y;
 
   // Compute L-based sums via Faulhaber
   double sum_L1 = Faulhaber(n-1,1); //#S1(n-1);
@@ -55,17 +60,17 @@ double QuadraticCost::interval_cost(int s, int t, double p_s, double p_t, double
   double sum_L4 = Faulhaber(n-1,4); //#S4(n-1);
 
   // Expanded quadratic cost
-  double cost = 0.0;
-  cost += a * a * sum_L4 / 4.;
-  cost += a * b * sum_L3;
-  cost += (a * c + b * b) * sum_L2;
-  cost += 2.0 * b * c * sum_L1;
-  cost += c * c * n;
-  cost -=  a * sum_yL2;
-  cost -= 2.0 * b * sum_yL1;
-  cost -= 2.0 * c * sum_y;
-  cost += sum_y2;
-  cost /=n;
-  return cost;
+  double mse = 0.0;
+  Eigen::VectorXd dimensionCosts(y.rows());
+  dimensionCosts += a * a * sum_L4 / 4.;
+  dimensionCosts += a * b * sum_L3;
+  dimensionCosts += (a * c + b * b) * sum_L2;
+  dimensionCosts += 2.0 * b * c * sum_L1;
+  dimensionCosts += c * c * n;
+  dimensionCosts -=  a * sum_yL2;
+  dimensionCosts -= 2.0 * b * sum_yL1;
+  dimensionCosts -= 2.0 * c * sum_y;
+  dimensionCosts += sum_y2;
+  mse = dimensionCosts.sum()/n;
+  return mse;
 }
-

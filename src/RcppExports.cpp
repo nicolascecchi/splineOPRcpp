@@ -12,22 +12,10 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// compute_multiple_speeds
-Rcpp::NumericVector compute_multiple_speeds(const std::vector<double>& data);
-RcppExport SEXP _splineOP_compute_multiple_speeds(SEXP dataSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::vector<double>& >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_multiple_speeds(data));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 RcppExport SEXP _rcpp_module_boot_splineop();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_splineOP_compute_multiple_speeds", (DL_FUNC) &_splineOP_compute_multiple_speeds, 1},
     {"_rcpp_module_boot_splineop", (DL_FUNC) &_rcpp_module_boot_splineop, 0},
     {NULL, NULL, 0}
 };

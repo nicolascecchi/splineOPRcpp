@@ -15,8 +15,49 @@ plot(signal, type = "l")
 cumsum(segments)
 
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
-spop <- new(SplineOP, signal, 5, 1,0.025,5)
+
+newsignal = rbind(signal,signal)
+data_matrix <- matrix(as.numeric(signal), nrow=2, ncol=500)
+nrow(data_matrix)
+ncol(data_matrix)
+qc= new(QuadraticCost, t(data_matrix))
+qc$get_ndims
+qc$get_nobs
+
+ncol(qc$get_cumsum_y2)
+nrow(qc$get_cumsum_y2)
+
+
+
+
+spop <- new(SplineOP, data_matrix, 2, 1,0.025,5)
+
+spop$get_segment_cost(0,5,matrix(data_matrix[0]),matrix(data_matrix[5]), ,matrix(data_matrix[2]))
+
+spop.predict(1.)
+
+q = new(QuadraticCost, data_matrix)
+
+nrow(spop$get_cumsum_yL1)
+spop$get_cumsum_yL2
+spop$get_
+
+nrow(spop$get_initSpeeds)
+
+print(spop)
+
+spop$get_cumsum_yL1
+
+
+
+spop$predict(1.)
+
+
+
+dim(newsignal)
+spop <- new(SplineOP, signal, 2, 1,0.025,5)
 spop$predict(0.025)
+spop$get_initSpeeds
 spop$get_changepoints
 cumsum(segments)
 

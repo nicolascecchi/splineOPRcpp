@@ -7,51 +7,73 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 /**
- * @brief 
- * 
- * for the first N points of the data and returns the coefficient 'b' (speed).
+ * @brief Computes the least squares quadratic approximation for one dimension.
+ * @param data_row The single dimension data (N x 1 vector) passed by CONST REFERENCE.
  */
-double get_approx_speed(const std::vector<double>& data, int N) {
+double get_approx_speed_1d(const Eigen::VectorXd& data_row, size_t N) {
+    
+    // ... (Input Validation and Setup Matrices remain the same) ...
     
     // 1. Input Validation
-    if (N < 3 || N > data.size()) {
-        throw std::runtime_error("N must be at least 3 and not exceed the data size.");
+    Rcpp::Rcout<<"N values is: " << N << std::endl;
+    Rcpp::Rcout<<"Data size is: " << data_row.size() << std::endl;
+    if (N < 3 || N > static_cast<size_t>(data_row.size())) {
+        
+        throw std::runtime_error("N (endpoint) must be at least 3 and not exceed the data size.");
     }
     
     // 2. Setup Matrices for LSQ (Y = X * Beta)
-    // X is the design matrix: [ x^2, x, 1 ]
-    MatrixXd X(N, 3);
-    // Y is the response vector: [ y ]
-    VectorXd Y(N);
+    Eigen::MatrixXd X(N, 3);
+    Eigen::VectorXd Y(N);
     
     for (int i = 0; i < N; ++i) {
-        double x = (double)i;
-        double x_sq = x * x;
+        double x = static_cast<double>(i);
         
-        // Design Matrix X (column-major order in Eigen is fine)
-        X(i, 0) = x_sq; // x^2
-        X(i, 1) = x;    // x
-        X(i, 2) = 1.0;  // 1
+        // Design Matrix X (independent of data)
+        X(i, 0) = x * x; 
+        X(i, 1) = x;     
+        X(i, 2) = 1.0;   
         
-        // Response Vector Y (the data value)
-        Y(i) = data[i];
+        // Response Vector Y (uses the referenced data_row)
+        Y(i) = data_row(i);
     }
     
     // 3. Solve the Least Squares System: Beta = (X' * X)^-1 * X' * Y
-    // Use Eigen's QR decomposition for a stable solution
-    VectorXd Beta = X.householderQr().solve(Y);
+    Eigen::VectorXd Beta = X.householderQr().solve(Y);
     
-    // Beta vector holds the coefficients: [ a, b, c ]
-    
-    // 4. Return the coefficient 'b' (the linear term, approximation of the first derivative/speed)
-    // The 'b' coefficient is at index 1.
+    // 4. Return the coefficient 'b'
     return Beta(1);
 }
 
-std::vector<double> EsimateSpeeds(std::vector<double>& data, std::vector<int>sizes){
-    std::vector<double> speeds = std::vector<double>(sizes.size(), 0.);
-    for (size_t j = 0; j < sizes.size(); ++j){
-        speeds[j] = get_approx_speed(data, sizes[j]);
+
+/**
+ * @brief Calculates the initial speed for each dimension using multiple window sizes.
+ * @param data The input data matrix (Rows = Dimensions, Columns = Observations).
+ * @param sizes A vector of window lengths (N) to use for the LSQ fit.
+ * @return Eigen::MatrixXd A matrix (Dimensions x Sizes) containing the estimated speeds.
+ */
+Eigen::MatrixXd EstimateSpeeds(Eigen::MatrixXd data, const std::vector<int> sizes){    
+    Eigen::Index ndims = data.rows(); // size of output speed vector
+    std::cout << "Data dims: " << ndims << std::endl;
+    std::cout << "Data obs: " << data.cols() << std::endl;
+    Eigen::Index num_sizes = sizes.size(); // quantity of speed estimations
+    Eigen::MatrixXd initSpeeds(ndims, num_sizes); // Place holder for the different initSpeeds
+    
+    // Loop through each dimension (row)
+    for (Eigen::Index j = 0; j < ndims; ++j) 
+    {
+        // get current row
+        const Eigen::VectorXd data_row = data.row(j).transpose(); 
+        
+        // Loop through each window size 
+        for (Eigen::Index k = 0; k < num_sizes; ++k)
+        {
+            size_t N_window = static_cast<size_t>(sizes[k]);
+            
+            // Pass the materialized data_row by CONST REFERENCE
+            initSpeeds(j, k) = get_approx_speed_1d(data_row, N_window);
+        }
     }
-    return speeds;
+    
+    return initSpeeds;
 }

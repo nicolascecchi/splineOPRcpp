@@ -8,7 +8,7 @@
 #include <limits>   // Use it to have the infinity for the CURRENT_MIN cost
 #include <cmath>   // use it in Faulhaber inside the cost 
 #include <random>      // for random number generation
-#include "Matrix.h" // for storing values in DP loo
+#include <RcppEigen.h> // for storing values in DP loo
 #include "QuadraticCost.h" // for computing the cost 
 #include <optional> // To avoid initializing matrices at construction
 
@@ -21,35 +21,57 @@ class SplineOP
         size_t nspeeds;
         //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
 
-        spop::Matrix<double> speeds; // best speed holder
-        spop::Matrix<double> costs;  // matrix of costs
-        std::vector<double> initspeeds; //  to check if matrix or vector ; set of initial speeds;
-        spop::Matrix<double> states; // sets of state for each time 
+        std::vector<Eigen::MatrixXd> speeds; // best speed holder
+        Eigen::MatrixXd costs;  // matrix of costs
+        Eigen::MatrixXd initSpeeds; //  to check if matrix or vector ; set of initial speeds;
+        std::vector<Eigen::MatrixXd> states; // sets of state for each time 
         
-        spop::Matrix<int> argmin_i; // Store INDEX of best previous state
-        spop::Matrix<int> argmin_s; // Store best previous time
+        Eigen::MatrixXi argmin_i; // Store INDEX of best previous state
+        Eigen::MatrixXi argmin_s; // Store best previous time
         
         QuadraticCost qc;
         
         std::vector<int> changepoints;
-        spop::Matrix<double> generate_states(size_t nstates, const std::vector<double>& data, double data_var, int seed); // State generator
+        std::vector<Eigen::MatrixXd> generate_states(
+                                            size_t nstates,
+                                            Eigen::MatrixXd data, // Input is now MatrixXd
+                                            double data_var, 
+                                            int seed);
+        Eigen::MatrixXd generate_matrix_of_noise( //MON
+                                            std::mt19937& gen, 
+                                            double std_dev, 
+                                            Eigen::Index rows, 
+                                            Eigen::Index cols);
         void backtrack_changes();
     //public methods and attributes
     public:
-        //void set_speeds(const spop::Matrix<double>& speeds);
+        //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(double beta); // predicts with a given penalty
 
         //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
-        spop::Matrix<double> get_speeds() const {return speeds;}
-        spop::Matrix<double> get_costs() const {return costs;}
-        std::vector<double> get_initspeeds() const {return initspeeds;}
-        spop::Matrix<double> get_states() const {return states;}
-        spop::Matrix<int> get_argmin_i() const {return argmin_i;}
-        spop::Matrix<int> get_argmin_s() const {return argmin_s;}
-        double get_segment_cost(int s, int t, double p_s, double p_t, double v_s); // compute a cost with given parameters
-    //constructor
-    explicit SplineOP(std::vector<double>  data
+        std::vector<Eigen::MatrixXd> get_speeds() const {return speeds;}
+        Eigen::MatrixXd get_costs() const {return costs;}
+        Eigen::VectorXd get_initSpeeds() const {return initSpeeds;}
+        std::vector<Eigen::MatrixXd> get_states() const {return states;}
+        Eigen::MatrixXi get_argmin_i() const {return argmin_i;}
+        Eigen::MatrixXi get_argmin_s() const {return argmin_s;}
+        double get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s); // compute a cost with given parameters
+        
+        // Cost getters
+        Eigen::MatrixXd get_cumsum_y()   const {return qc.get_cumsum_y();}
+        Eigen::MatrixXd get_cumsum_y2()  const {return qc.get_cumsum_y2();}
+        Eigen::MatrixXd get_cumsum_yL1() const {return qc.get_cumsum_yL1();}
+        Eigen::MatrixXd get_cumsum_yL2() const {return qc.get_cumsum_yL2();}
+        Eigen::VectorXd get_sum_y()   const {return qc.get_sum_y();}
+        Eigen::VectorXd get_sum_y2()  const {return qc.get_sum_y2();}
+        Eigen::VectorXd get_sum_yL1() const {return qc.get_sum_yL1();}
+        Eigen::VectorXd get_sum_yL2() const {return qc.get_sum_yL2();}
+
+        void set_qc(Eigen::MatrixXd& data);
+    
+        //constructor
+    explicit SplineOP(Eigen::MatrixXd  data
                       ,size_t nstates
                       ,size_t nspeeds
                       ,double data_var
