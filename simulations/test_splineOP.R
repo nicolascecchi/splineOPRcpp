@@ -17,10 +17,17 @@ cumsum(segments)
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
 
 newsignal = rbind(signal,signal)
-data_matrix <- matrix(as.numeric(signal), nrow=2, ncol=500)
+data_matrix <- matrix(as.numeric(newsignal), nrow=2, ncol=1000)
 nrow(data_matrix)
 ncol(data_matrix)
-qc= new(QuadraticCost, t(data_matrix))
+qc= new(QuadraticCost, data_matrix)
+
+
+
+
+qc$interval_cost(0,6,data_matrix[,0],data_matrix[,6],data_matrix[,2] )
+
+
 qc$get_ndims
 qc$get_nobs
 
@@ -32,9 +39,13 @@ nrow(qc$get_cumsum_y2)
 
 spop <- new(SplineOP, data_matrix, 2, 1,0.025,5)
 
-spop$get_segment_cost(0,5,matrix(data_matrix[0]),matrix(data_matrix[5]), ,matrix(data_matrix[2]))
+spop$get_segment_cost(0,
+                      5,
+                      matrix(data_matrix[0]),
+                      matrix(data_matrix[5]),
+                      matrix(data_matrix[2]))
 
-spop.predict(1.)
+spop$predict(1.)
 
 q = new(QuadraticCost, data_matrix)
 

@@ -42,7 +42,11 @@ class QuadraticCost
 
     // Compute quadratic cost on interval [s, t) for given (p_s, p_t, v_t)
     //double interval_cost(int s, int t, double p_s, double p_t, double v_t) const;
-    double interval_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s) const;
+    double interval_cost(Eigen::Index s
+      , Eigen::Index t
+      , Eigen::VectorXd p_s
+      , Eigen::VectorXd p_t
+      , Eigen::VectorXd v_s);
 };
 
 #endif // QUADRATIC_COST_H
