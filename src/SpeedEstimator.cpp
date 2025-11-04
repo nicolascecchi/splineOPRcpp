@@ -15,8 +15,6 @@ double get_approx_speed_1d(const Eigen::VectorXd& data_row, size_t N) {
     // ... (Input Validation and Setup Matrices remain the same) ...
     
     // 1. Input Validation
-    Rcpp::Rcout<<"N values is: " << N << std::endl;
-    Rcpp::Rcout<<"Data size is: " << data_row.size() << std::endl;
     if (N < 3 || N > static_cast<size_t>(data_row.size())) {
         
         throw std::runtime_error("N (endpoint) must be at least 3 and not exceed the data size.");
