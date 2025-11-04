@@ -14,7 +14,7 @@ SplineOP::SplineOP(Eigen::MatrixXd  data
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
 
-    ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), data.cols())) // initialize with dim nobs, its elements are Eigen::MatrixXd
+    ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
     ,costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
     ,initSpeeds{data.rows(),nspeeds}
     ,states() // default initialization, overwritten in the body of the constructor
@@ -30,7 +30,7 @@ SplineOP::SplineOP(Eigen::MatrixXd  data
         this->argmin_s.setConstant(-1);
 
         this->states = generate_states(nstates, data, data_var, seed);
-        const std::vector<int> sp{4,5,6};
+        const std::vector<int> sp{20,30,40,50,60};
         this->initSpeeds = EstimateSpeeds(data, sp);
        }
 
@@ -113,10 +113,7 @@ void SplineOP::predict(double beta){
     // reinitialize changepoints and costs for new fit (small overhead for first time)
     this->changepoints = std::vector(1,this->nobs-1); 
     this->costs.setConstant(std::numeric_limits<double>::infinity());
-
-    for (size_t j = 0; j < this->nstates; j++){
-        this->costs(j, 0) = 0; // random initial cost for 0 data point
-    }  
+  
     // Loop over data
     for (size_t t = 1; t < static_cast<size_t>(nobs); t++){ // current last point
         for (size_t j = 0; j < nstates; j++){ // current state
