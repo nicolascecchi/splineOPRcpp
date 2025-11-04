@@ -14,5 +14,9 @@ data_matrix <- matrix(as.numeric(newsignal), nrow=2, ncol=1000)
 nrow(data_matrix)
 ncol(data_matrix)
 qc= new(QuadraticCost, data_matrix)
-cost = qc$interval_cost(0,6,data_matrix[,0],data_matrix[,6],data_matrix[,2] )
-print(cost)
+p = data_matrix[,2]
+cost = qc$interval_cost(0,6,p,p,p )
+spop <- new(SplineOP, data_matrix, 2, 1,0.025,5)
+spop$get_segment_cost(0,6,p,p,p )
+
+spop$predict(1.0)
