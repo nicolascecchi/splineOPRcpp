@@ -10,11 +10,11 @@ SplineOP::SplineOP(Eigen::MatrixXd  data
                 ,size_t nspeeds
                 ,double data_var
                 ,int seed):
-    nobs{static_cast<int>(data.cols())}
+     nobs{static_cast<int>(data.cols())}
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
 
-    ,speeds(nobs) // initialize with dim nobs, its elements are Eigen::MatrixXd
+    ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), data.cols())) // initialize with dim nobs, its elements are Eigen::MatrixXd
     ,costs{nstates, static_cast<size_t>(data.size())}//, std::numeric_limits<double>::infinity())
     ,initSpeeds{data.cols(),nspeeds}
     ,states() // default initialization, overwritten in the body of the constructor
@@ -97,75 +97,77 @@ Eigen::MatrixXd SplineOP::generate_matrix_of_noise( //MON
 }
 
 void SplineOP::predict(double beta){
+
+    Eigen::VectorXd v_s;
+    Eigen::VectorXd v_t;
+    Eigen::VectorXd p_s;
+    Eigen::VectorXd p_t;
+    Eigen::VectorXd best_speed;
+    double interval_cost;
+    double candidate;
+    double current_MIN = std::numeric_limits<double>::infinity();
+    int best_i = -1;
+    int best_s = -1;
     // reinitialize changepoints and costs for new fit (small overhead for first time)
-    std::cout<<"Begin prediction"<<std::endl;
     this->changepoints = std::vector(1,this->nobs-1); 
     this->costs.setConstant(std::numeric_limits<double>::infinity());
-    std::cout<<"Successfully initiaed changepoints and costs matrices"<<std::endl;
 
     for (size_t j = 0; j < this->nstates; j++){
         this->costs(j, 0) = 0; // random initial cost for 0 data point
     }  
-    std::cout<<"Successfully filled the first column of costs matrix"<<std::endl;
     // Loop over data
-    std::cout<<"Begin real computations"<<std::endl;
     for (size_t t = 1; t < static_cast<size_t>(nobs); t++){ // current last point
-        //Rcpp::Rcout << "====================== new end point =========================" << std::endl;
         for (size_t j = 0; j < nstates; j++){ // current state
-            Eigen::VectorXd p_t = states[t].row(j); // Fix final position
-            double current_MIN = std::numeric_limits<double>::infinity();
-            Eigen::VectorXd best_speed;
-            int best_i = -1;
-            int best_s = -1;
+            p_t = states[t].col(j).eval(); // Fix final position
+            current_MIN = std::numeric_limits<double>::infinity();
+            best_speed;
+            best_i = -1;
+            best_s = -1;
             // Find the best solution (state j,time t)
-            //Rcpp::Rcout << "Evalute best solution for t = " << t << std::endl;
             for (size_t s = 0; s < t; s++){ // previous times
                 Rcpp::checkUserInterrupt(); // allow user interruption
                 for (size_t i = 0; i < nstates; i++){ // previous state
                     // Fix start and end position in time and space
-                    Eigen::VectorXd p_s = states[s].col(i); // Get starting state position
+                    p_s = states[s].col(i).eval(); // Get starting state position
                     if (s == 0){
                         //Rcpp::Rcout << "Solution without change" << std::endl;
                         for (size_t spdidx = 0; spdidx < this->nspeeds; spdidx++){ // init speed loop
-                            Eigen::VectorXd v_s = initSpeeds.col(spdidx).eval();
-                            Eigen::VectorXd v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
+                            v_s = initSpeeds.col(spdidx).eval();
+                            v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
                             // Quadratic cost for interval [s, t)
-                            double interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                            interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                             // Candidate cost (DP recurrence)
-                            double candidate = interval_cost;
-                            //Rcpp::Rcout << "Cost =" << interval_cost << std::endl;  
-                            //Rcpp::Rcout << "s "<< s << " t: " << t << " p_s: "<<  p_s << " p_t: "<< p_t << "v_t: "<< v_t << std::endl;
+                            candidate = interval_cost;
                             if (candidate < current_MIN){
                                 current_MIN = candidate;
                                 best_speed = v_t;
                                 best_i = i;
                                 best_s = s;
                             }
-                        }
+                        }                        
                     }
                     else{
                         // compute speed
                         //Rcpp::Rcout << "Changepoint time : " << s << std::endl;
-                        Eigen::VectorXd v_s = speeds[s].col(i);
-                        Eigen::VectorXd v_t = 2*(p_t - p_s)/(t - s) - v_s; 
+                        v_s = this->speeds[s].col(i).eval();
+                        v_t = 2*(p_t - p_s)/(t - s) - v_s; 
                         // Quadratic cost for interval [s, t)
-                        double interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                        // THIS INTERVAL COST IS BREAKING THE CODE 
+                        //interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                         // Candidate cost (DP recurrence)
-                        double candidate = costs(i, s) + interval_cost + beta;
-                        //Rcpp::Rcout << "Cost = cost(" << i << ", " << s << ")+ invtv cost + beta" << std::endl;
-                        //Rcpp::Rcout << candidate << " = " << costs(i, s) << " + " << interval_cost << " + " << beta <<std::endl;  
-                        
+                        candidate = 0.0; //costs(i, s) + interval_cost + beta;         
                         if (candidate < current_MIN){
                             current_MIN = candidate;
                             best_speed = v_t;
                             best_i = i;
                             best_s = s;
-                        }
-                    }
+                              }
+                     }
                 }
             }
+
             costs(j, t) = current_MIN;
-            speeds[t].col(j) = best_speed;
+            this->speeds[t].col(j) = best_speed;
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
         }

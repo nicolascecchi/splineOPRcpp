@@ -20,7 +20,7 @@ class SplineOP
         size_t nstates;
         size_t nspeeds;
         //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
-
+        
         std::vector<Eigen::MatrixXd> speeds; // best speed holder
         Eigen::MatrixXd costs;  // matrix of costs
         Eigen::MatrixXd initSpeeds; //  to check if matrix or vector ; set of initial speeds;
