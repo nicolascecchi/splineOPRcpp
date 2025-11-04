@@ -30,7 +30,7 @@ SplineOP::SplineOP(Eigen::MatrixXd  data
         this->argmin_s.setConstant(-1);
 
         this->states = generate_states(nstates, data, data_var, seed);
-        const std::vector<int> sp{20,40,60};
+        const std::vector<int> sp{4,5,6};
         this->initSpeeds = EstimateSpeeds(data, sp);
        }
 
@@ -100,7 +100,6 @@ Eigen::MatrixXd SplineOP::generate_matrix_of_noise( //MON
 }
 
 void SplineOP::predict(double beta){
-
     Eigen::VectorXd v_s;
     Eigen::VectorXd v_t;
     Eigen::VectorXd p_s;

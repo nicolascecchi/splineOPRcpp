@@ -33,9 +33,9 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
 // --- Compute cost C_{s:t}(p_s, p_t, v_t) ---
 double QuadraticCost::interval_cost( Eigen::Index s
                                    , Eigen::Index t
-                                   , Eigen::VectorXd p_s
-                                   , Eigen::VectorXd p_t
-                                   , Eigen::VectorXd v_s)
+                                   , const Eigen::VectorXd& p_s
+                                   , const Eigen::VectorXd& p_t
+                                   , const Eigen::VectorXd& v_s)
 {
   //assert(t > s && s >= 0 && t <= this->nobs);
   int n = t - s;
