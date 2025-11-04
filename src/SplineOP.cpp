@@ -15,8 +15,8 @@ SplineOP::SplineOP(Eigen::MatrixXd  data
     ,nspeeds{nspeeds}
 
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), data.cols())) // initialize with dim nobs, its elements are Eigen::MatrixXd
-    ,costs{nstates, static_cast<size_t>(data.size())}//, std::numeric_limits<double>::infinity())
-    ,initSpeeds{data.cols(),nspeeds}
+    ,costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
+    ,initSpeeds{data.rows(),nspeeds}
     ,states() // default initialization, overwritten in the body of the constructor
 
     ,argmin_i{nstates, data.cols()}
@@ -30,9 +30,12 @@ SplineOP::SplineOP(Eigen::MatrixXd  data
         this->argmin_s.setConstant(-1);
 
         this->states = generate_states(nstates, data, data_var, seed);
-        const std::vector<int> sp{5,10};
+        const std::vector<int> sp{20,40,60};
         this->initSpeeds = EstimateSpeeds(data, sp);
     }
+
+
+// Constructor with given speeds
 
 /**
  * @brief Generates a 3D structure of states from observed data.
@@ -153,9 +156,9 @@ void SplineOP::predict(double beta){
                         v_t = 2*(p_t - p_s)/(t - s) - v_s; 
                         // Quadratic cost for interval [s, t)
                         // THIS INTERVAL COST IS BREAKING THE CODE 
-                        //interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                        interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                         // Candidate cost (DP recurrence)
-                        candidate = 0.0; //costs(i, s) + interval_cost + beta;         
+                        candidate = costs(i, s) + interval_cost + beta;         
                         if (candidate < current_MIN){
                             current_MIN = candidate;
                             best_speed = v_t;

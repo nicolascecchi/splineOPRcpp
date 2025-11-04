@@ -54,8 +54,6 @@ double get_approx_speed_1d(const Eigen::VectorXd& data_row, size_t N) {
  */
 Eigen::MatrixXd EstimateSpeeds(Eigen::MatrixXd data, const std::vector<int> sizes){    
     Eigen::Index ndims = data.rows(); // size of output speed vector
-    std::cout << "Data dims: " << ndims << std::endl;
-    std::cout << "Data obs: " << data.cols() << std::endl;
     Eigen::Index num_sizes = sizes.size(); // quantity of speed estimations
     Eigen::MatrixXd initSpeeds(ndims, num_sizes); // Place holder for the different initSpeeds
     
