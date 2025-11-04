@@ -32,7 +32,7 @@ SplineOP::SplineOP(Eigen::MatrixXd  data
         this->states = generate_states(nstates, data, data_var, seed);
         const std::vector<int> sp{20,40,60};
         this->initSpeeds = EstimateSpeeds(data, sp);
-    }
+       }
 
 
 // Constructor with given speeds

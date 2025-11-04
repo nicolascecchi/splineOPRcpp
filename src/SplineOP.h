@@ -48,11 +48,12 @@ class SplineOP
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(double beta); // predicts with a given penalty
 
+
         //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
         std::vector<Eigen::MatrixXd> get_speeds() const {return speeds;}
         Eigen::MatrixXd get_costs() const {return costs;}
-        Eigen::VectorXd get_initSpeeds() const {return initSpeeds;}
+        Eigen::MatrixXd get_initSpeeds() const {return initSpeeds;}
         std::vector<Eigen::MatrixXd> get_states() const {return states;}
         Eigen::MatrixXi get_argmin_i() const {return argmin_i;}
         Eigen::MatrixXi get_argmin_s() const {return argmin_s;}

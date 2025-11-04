@@ -54,8 +54,8 @@ double get_approx_speed_1d(const Eigen::VectorXd& data_row, size_t N) {
  */
 Eigen::MatrixXd EstimateSpeeds(Eigen::MatrixXd data, const std::vector<int> sizes){    
     Eigen::Index ndims = data.rows(); // size of output speed vector
-    Eigen::Index num_sizes = sizes.size(); // quantity of speed estimations
-    Eigen::MatrixXd initSpeeds(ndims, num_sizes); // Place holder for the different initSpeeds
+    Eigen::Index nsamples_to_estimate = sizes.size(); // quantity of speed estimations
+    Eigen::MatrixXd initSpeeds(ndims, nsamples_to_estimate); // Place holder for the different initSpeeds
     
     // Loop through each dimension (row)
     for (Eigen::Index j = 0; j < ndims; ++j) 
@@ -64,7 +64,7 @@ Eigen::MatrixXd EstimateSpeeds(Eigen::MatrixXd data, const std::vector<int> size
         const Eigen::VectorXd data_row = data.row(j).transpose(); 
         
         // Loop through each window size 
-        for (Eigen::Index k = 0; k < num_sizes; ++k)
+        for (Eigen::Index k = 0; k < nsamples_to_estimate; ++k)
         {
             size_t N_window = static_cast<size_t>(sizes[k]);
             
