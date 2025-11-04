@@ -4,7 +4,7 @@
 \alias{generate_Qspline_signal}
 \title{Generate a Quadratic Spline Signal with Additive Noise}
 \usage{
-generate_Qspline_signal(result, segments, noise_sd = 1)
+generate_Qspline_signal(result, segments, snr = 30)
 }
 \arguments{
 \item{result}{List output from `generate_Qsplines`, containing vectors `p`, `v`, and `a`
@@ -12,9 +12,9 @@ for the position, velocity, and acceleration of each segment.}
 
 \item{segments}{Numeric vector of segment lengths used to generate the spline.}
 
-\item{noise_sd}{Standard deviation of additive Gaussian noise (default 0).}
-
 \item{n_points}{Number of points per segment (default 50).}
+
+\item{noise_sd}{Standard deviation of additive Gaussian noise (default 0).}
 }
 \value{
 A numeric vector representing the continuous spline signal with noise.

@@ -12,7 +12,7 @@
 #' segments <- c(3, 2, 4)
 #' signal <- generate_Qspline_signal(result, segments, n_points = 100, noise_sd = 0.05)
 #' plot(signal, type = "l")
-generate_Qspline_signal <- function(result, segments, noise_sd = 1)
+generate_Qspline_signal <- function(result, segments)
 {
   x_full <- c()
   p_full <- c()
@@ -31,8 +31,7 @@ generate_Qspline_signal <- function(result, segments, noise_sd = 1)
     cum_len <- cum_len + seg_len
   }
 
-  noise <- rnorm(length(p_full), mean = 0, sd = noise_sd)
-  p_full <- p_full + noise
+  p_full <- p_full
 
   return(p_full)
 }
