@@ -43,24 +43,24 @@ double QuadraticCost::interval_cost( Eigen::Index s
 
   // Coefficients of the quadratic p(x) = a(x - x_s)^2 + b(x - x_s) + c
   double L = static_cast<double>(n);
-  Eigen::VectorXd a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
-  const Eigen::VectorXd b = v_s.eval();
-  const Eigen::VectorXd c = p_s.eval();
+  Eigen::ArrayXd a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
+  const Eigen::ArrayXd b = v_s.eval();
+  const Eigen::ArrayXd c = p_s.eval();
   //// Retrieve y-based sums from cumulative arrays.
   //// These are effectively cusum[t-1] - cusum[s-1] 
   //// when we think our mathematical cost function
-  Eigen::VectorXd sum_y    = cumsum_y.col(t)    - cumsum_y.col(s);
-  Eigen::VectorXd sum_y2   = cumsum_y2.col(t)   - cumsum_y2.col(s);
-  Eigen::VectorXd sum_yL1  = (cumsum_yL1.col(t)  - cumsum_yL1.col(s)) - (s * sum_y);
-  Eigen::VectorXd aux = (cumsum_yL1.col(t)  - cumsum_yL1.col(s));
-  Eigen::VectorXd sum_yL2  = (cumsum_yL2.col(t)  - cumsum_yL2.col(s))-2*s*aux+std::pow(s,2)*sum_y;
+  Eigen::ArrayXd sum_y    = (cumsum_y.col(t)    - cumsum_y.col(s)).array();
+  Eigen::ArrayXd sum_y2   = (cumsum_y2.col(t)   - cumsum_y2.col(s)).array();
+  Eigen::ArrayXd sum_yL1  = ((cumsum_yL1.col(t)  - cumsum_yL1.col(s)).array() - (s * sum_y)).array();
+  Eigen::ArrayXd aux = (cumsum_yL1.col(t)  - cumsum_yL1.col(s)).array();
+  Eigen::ArrayXd sum_yL2  = (cumsum_yL2.col(t)  - cumsum_yL2.col(s)).array()-2*s*aux+std::pow(s,2)*sum_y;
   //// Compute L-based sums via Faulhaber
   double sum_L1 = Faulhaber(n-1,1); //#S1(n-1);
   double sum_L2 = Faulhaber(n-1,2); //#S2(n-1);
   double sum_L3 = Faulhaber(n-1,3); //#S3(n-1);
   double sum_L4 = Faulhaber(n-1,4); //#S4(n-1);
   //// Expanded quadratic cost
-  Eigen::VectorXd dimensionCosts = Eigen::VectorXd::Zero(y.rows());
+  Eigen::ArrayXd dimensionCosts = Eigen::ArrayXd::Zero(y.rows());
   dimensionCosts += a * a * sum_L4 / 4.;
   dimensionCosts += a * b * sum_L3;
   dimensionCosts += (a * c + b * b) * sum_L2;
