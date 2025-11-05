@@ -17,10 +17,10 @@ class QuadraticCost
     Eigen::MatrixXd cumsum_yL1;
     Eigen::MatrixXd cumsum_yL2;
     // Polynomial coefficients and interval length
-    Eigen::VectorXd sum_y;
-    Eigen::VectorXd sum_y2;
-    Eigen::VectorXd sum_yL1;
-    Eigen::VectorXd sum_yL2;
+    Eigen::ArrayXd sum_y;
+    Eigen::ArrayXd sum_y2;
+    Eigen::ArrayXd sum_yL1;
+    Eigen::ArrayXd sum_yL2;
 
   public:
     // getters
@@ -28,10 +28,10 @@ class QuadraticCost
     Eigen::MatrixXd get_cumsum_y2()  const {return cumsum_y2;}
     Eigen::MatrixXd get_cumsum_yL1() const {return cumsum_yL1;}
     Eigen::MatrixXd get_cumsum_yL2() const {return cumsum_yL2;}
-    Eigen::VectorXd get_sum_y()   const {return sum_y;}
-    Eigen::VectorXd get_sum_y2()  const {return sum_y2;}
-    Eigen::VectorXd get_sum_yL1() const {return sum_yL1;}
-    Eigen::VectorXd get_sum_yL2() const {return sum_yL2;}
+    Eigen::ArrayXd get_sum_y()   const {return sum_y;}
+    Eigen::ArrayXd get_sum_y2()  const {return sum_y2;}
+    Eigen::ArrayXd get_sum_yL1() const {return sum_yL1;}
+    Eigen::ArrayXd get_sum_yL2() const {return sum_yL2;}
     size_t get_nobs() {return nobs;}
     size_t get_ndims() {return ndims;}
     Eigen::MatrixXd get_data() {return y;}

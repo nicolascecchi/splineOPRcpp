@@ -50,11 +50,11 @@ double QuadraticCost::interval_cost( size_t s
   //// Retrieve y-based sums from cumulative arrays.
   //// These are effectively cusum[t-1] - cusum[s-1] 
   //// when we think our mathematical cost function
-  Eigen::ArrayXd sum_y    = (cumsum_y.col(t)    - cumsum_y.col(s)).array();
-  Eigen::ArrayXd sum_y2   = (cumsum_y2.col(t)   - cumsum_y2.col(s)).array();
-  Eigen::ArrayXd sum_yL1  = ((cumsum_yL1.col(t)  - cumsum_yL1.col(s)).array() - (s * sum_y)).array();
+  sum_y    = (cumsum_y.col(t)    - cumsum_y.col(s)).array();
+  sum_y2   = (cumsum_y2.col(t)   - cumsum_y2.col(s)).array();
+  sum_yL1  = ((cumsum_yL1.col(t)  - cumsum_yL1.col(s)).array() - (s * sum_y)).array();
   Eigen::ArrayXd aux = (cumsum_yL1.col(t)  - cumsum_yL1.col(s)).array();
-  Eigen::ArrayXd sum_yL2  = (cumsum_yL2.col(t)  - cumsum_yL2.col(s)).array()-2*s*aux+std::pow(s,2)*sum_y;
+  sum_yL2  = (cumsum_yL2.col(t)  - cumsum_yL2.col(s)).array()-2*s*aux+std::pow(s,2)*sum_y;
   //// Compute L-based sums via Faulhaber
   double sum_L1 = Faulhaber(n-1,1); //#S1(n-1);
   double sum_L2 = Faulhaber(n-1,2); //#S2(n-1);
