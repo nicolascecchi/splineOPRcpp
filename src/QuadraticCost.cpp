@@ -19,9 +19,9 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
     cumsum_yL2(ndims,nobs+1){
   // Fill cumsum one dimension at a time
   y = data;
-  for (size_t j = 0; j < static_cast<size_t>(ndims); ++j)  // Loop over dimensions remove cast?
+  for (size_t j = 0; j < ndims; ++j)  // Loop over dimensions remove cast?
   {
-    for (size_t i = 0; i < static_cast<size_t>(nobs); ++i) // start at 1 since first is dummy at value=0 
+    for (size_t i = 0; i < nobs; ++i) // start at 1 since first is dummy at value=0 
     {
       cumsum_y(j,i+1)    = cumsum_y(j,i)    + y(j,i);
       cumsum_y2(j,i+1)   = cumsum_y2(j,i)   + y(j,i) * y(j,i);
