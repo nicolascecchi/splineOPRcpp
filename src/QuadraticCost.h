@@ -17,10 +17,10 @@ class QuadraticCost
     Eigen::MatrixXd cumsum_yL1;
     Eigen::MatrixXd cumsum_yL2;
     // Polynomial coefficients and interval length
-    Eigen::ArrayXd sum_y;
-    Eigen::ArrayXd sum_y2;
-    Eigen::ArrayXd sum_yL1;
-    Eigen::ArrayXd sum_yL2;
+    Eigen::VectorXd sum_y;
+    Eigen::VectorXd sum_y2;
+    Eigen::VectorXd sum_yL1;
+    Eigen::VectorXd sum_yL2;
 
   public:
     // getters
