@@ -10,7 +10,7 @@ SplineOP::SplineOP(Eigen::MatrixXd data
                 ,size_t nspeeds
                 ,double data_var
                 ,int seed):
-     nobs{static_cast<int>(data.cols())}
+     nobs{static_cast<size_t>(data.cols())}
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
@@ -20,15 +20,15 @@ SplineOP::SplineOP(Eigen::MatrixXd data
     ,argmin_i{nstates, data.cols()}
     ,argmin_s{nstates, data.cols()}  
     ,qc{data}
-    ,changepoints(1,static_cast<int>(data.size())-1) //??? place holder, will be superseeded afterwards
+    ,changepoints(1,static_cast<int>(data.cols())) //??? place holder, will be superseeded afterwards
     {
-        this->costs.setConstant(std::numeric_limits<double>::infinity());
-        this->argmin_i.setConstant(-1);
-        this->argmin_s.setConstant(-1);
+        costs.setConstant(std::numeric_limits<double>::infinity());
+        argmin_i.setConstant(-1);
+        argmin_s.setConstant(-1);
 
-        this->states = generate_states(nstates, data, data_var, seed);
+        states = generate_states(nstates, data, data_var, seed);
         const std::vector<int> sp{20,30,40,50,60};
-        this->initSpeeds = EstimateSpeeds(data, sp);
+        initSpeeds = EstimateSpeeds(data, sp);
     }
 
 
@@ -110,11 +110,11 @@ void SplineOP::predict(double beta)
     int best_i = -1;
     int best_s = -1;
     // reinitialize changepoints and costs for new fit (small overhead for first time)
-    this->changepoints = std::vector(1,this->nobs-1); 
-    this->costs.setConstant(std::numeric_limits<double>::infinity());
+    changepoints = std::vector(1,static_cast<int>(nobs-1)); 
+    costs.setConstant(std::numeric_limits<double>::infinity());
   
     // Loop over data
-    for (size_t t = 1; t < static_cast<size_t>(nobs); t++)
+    for (size_t t = 1; t < nobs; t++)
     { // current last point
         for (size_t j = 0; j < nstates; j++)
         { // current last state
@@ -134,7 +134,7 @@ void SplineOP::predict(double beta)
                     if (s == 0)
                     {
                         //Rcpp::Rcout << "Solution without change" << std::endl;
-                        for (size_t spdidx = 0; spdidx < this->nspeeds; spdidx++){ // init speed loop
+                        for (size_t spdidx = 0; spdidx < nspeeds; spdidx++){ // init speed loop
                             v_s = initSpeeds.col(spdidx).eval();
                             v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
                             // Quadratic cost for interval [s, t)
@@ -152,7 +152,7 @@ void SplineOP::predict(double beta)
                     else{   
                         // compute speed
                         //Rcpp::Rcout << "Changepoint time : " << s << std::endl;
-                        v_s = this->speeds[s].col(i).eval();
+                        v_s = speeds[s].col(i).eval();
                         v_t = 2*(p_t - p_s)/(t - s) - v_s; 
                         // Quadratic cost for interval [s, t)
                         // THIS INTERVAL COST IS BREAKING THE CODE 
@@ -170,7 +170,7 @@ void SplineOP::predict(double beta)
             }
 
             costs(j, t) = current_MIN;
-            this->speeds[t].col(j) = best_speed;
+            speeds[t].col(j) = best_speed;
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
         }
@@ -183,9 +183,9 @@ void SplineOP::backtrack_changes()
     // Find best final state
     double min_final = std::numeric_limits<double>::infinity();
     int best_final_state = -1;
-    for (size_t j = 0; j < this->nstates; j++)
+    for (size_t j = 0; j < nstates; j++)
     {
-        if (costs(j, this->nobs - 1) < min_final)
+        if (costs(j, nobs - 1) < min_final)
         {
         min_final = costs(j, nobs - 1);
         best_final_state = j;
@@ -219,9 +219,9 @@ void SplineOP::backtrack_changes()
 
 
 double SplineOP::get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s){
-    return this->qc.interval_cost(s, t, p_s, p_t, v_s);
+    return qc.interval_cost(s, t, p_s, p_t, v_s);
     }
 
 void SplineOP::set_qc(Eigen::MatrixXd& data){
-    this->qc = QuadraticCost(data);  // Initialize the cost function with the provided data
+    qc = QuadraticCost(data);  // Initialize the cost function with the provided data
 }

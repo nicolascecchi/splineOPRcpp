@@ -18,7 +18,7 @@ class SplineOP
 {
     // private methods and attributes
     private:
-        int nobs; // Size of the data --> Change to npoints for being more explicit?
+        size_t nobs; // Size of the data --> Change to npoints for being more explicit?
         size_t nstates;
         size_t nspeeds;
         //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
