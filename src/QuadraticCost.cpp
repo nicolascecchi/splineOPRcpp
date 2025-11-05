@@ -16,7 +16,11 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
     cumsum_y{Eigen::MatrixXd::Zero(ndims,nobs+1)},
     cumsum_y2{Eigen::MatrixXd::Zero(ndims,nobs+1)},
     cumsum_yL1{Eigen::MatrixXd::Zero(ndims,nobs+1)},
-    cumsum_yL2{Eigen::MatrixXd::Zero(ndims,nobs+1)}{
+    cumsum_yL2{Eigen::MatrixXd::Zero(ndims,nobs+1)},
+    sum_y{Eigen::VectorXd::Zero(ndims)},
+    sum_y2{Eigen::VectorXd::Zero(ndims)},
+    sum_yL1{Eigen::VectorXd::Zero(ndims)},
+    sum_yL2{Eigen::VectorXd::Zero(ndims)}{
   // Fill cumsum one dimension at a time
   y = data;
   for (size_t j = 0; j < ndims; ++j)  // Loop over dimensions remove cast?
