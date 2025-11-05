@@ -11,6 +11,7 @@ SplineOP::SplineOP(Eigen::MatrixXd data
                 ,double data_var
                 ,int seed):
      nobs{static_cast<size_t>(data.cols())}
+    ,ndims{static_cast<size_t>(data.rows())}
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
@@ -49,8 +50,8 @@ std::vector<Eigen::MatrixXd> SplineOP::generate_states(
     double data_var, 
     int seed)
 {
-    size_t nobs = data.cols(); // Observations/Time (N) already known
-    size_t ndims = data.rows(); // Coordinates/Dimensions (K)
+    //size_t nobs = data.cols(); // Observations/Time (N) already known
+    //size_t ndims = data.rows(); // Coordinates/Dimensions (K)
     size_t noise_states = nstates - 1; // Number of states requiring noise
     
     // 3D structure: vector index = time (t), Matrix = (ndims x nstates)
