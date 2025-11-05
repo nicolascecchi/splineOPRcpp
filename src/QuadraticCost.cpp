@@ -45,8 +45,8 @@ double QuadraticCost::interval_cost( size_t s
   // Coefficients of the quadratic p(x) = a(x - x_s)^2 + b(x - x_s) + c
   double L = static_cast<double>(n);
   Eigen::ArrayXd a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
-  const Eigen::ArrayXd b = v_s.eval();
-  const Eigen::ArrayXd c = p_s.eval();
+  Eigen::ArrayXd b = v_s.eval();
+  Eigen::ArrayXd c = p_s.eval();
   //// Retrieve y-based sums from cumulative arrays.
   //// These are effectively cusum[t-1] - cusum[s-1] 
   //// when we think our mathematical cost function
