@@ -1,8 +1,9 @@
 #include <cmath> // Required for std::pow
 #include <cassert>
 #include <Rcpp.h>
-#include "Faulhaber.h"
 #include <RcppEigen.h>
+
+#include "Faulhaber.h"
 #include "QuadraticCost.h"
 
 
@@ -18,9 +19,9 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
     cumsum_yL2(ndims,nobs+1){
   // Fill cumsum one dimension at a time
   y = data;
-  for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(ndims); ++j)  // Loop over dimensions
+  for (size_t j = 0; j < static_cast<size_t>(ndims); ++j)  // Loop over dimensions remove cast?
   {
-    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(nobs); ++i) // start at 1 since first is dummy at value=0 
+    for (size_t i = 0; i < static_cast<size_t>(nobs); ++i) // start at 1 since first is dummy at value=0 
     {
       cumsum_y(j,i+1)    = cumsum_y(j,i)    + y(j,i);
       cumsum_y2(j,i+1)   = cumsum_y2(j,i)   + y(j,i) * y(j,i);
@@ -31,8 +32,8 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
 }
 
 // --- Compute cost C_{s:t}(p_s, p_t, v_t) ---
-double QuadraticCost::interval_cost( Eigen::Index s
-                                   , Eigen::Index t
+double QuadraticCost::interval_cost( size_t s
+                                   , size_t t
                                    , const Eigen::VectorXd& p_s
                                    , const Eigen::VectorXd& p_t
                                    , const Eigen::VectorXd& v_s)

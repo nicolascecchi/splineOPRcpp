@@ -4,7 +4,7 @@
 \alias{generate_Qspline_signal}
 \title{Generate a Quadratic Spline Signal with Additive Noise}
 \usage{
-generate_Qspline_signal(result, segments, snr = 30)
+generate_Qspline_signal(result, segments)
 }
 \arguments{
 \item{result}{List output from `generate_Qsplines`, containing vectors `p`, `v`, and `a`

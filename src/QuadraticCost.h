@@ -3,15 +3,14 @@
 
 #include <vector>
 #include <RcppEigen.h>
-//#include <RcppEigen.h> 
 
 // Class for fast O(1) evaluation of quadratic spline cost on equispaced intervals
 class QuadraticCost
 {
   private:
     Eigen::MatrixXd y;
-    Eigen::Index nobs;
-    Eigen::Index ndims;
+    size_t nobs;
+    size_t ndims;
     // Precomputed cumulative sums depending on 
     Eigen::MatrixXd cumsum_y;
     Eigen::MatrixXd cumsum_y2;
@@ -33,17 +32,17 @@ class QuadraticCost
     Eigen::VectorXd get_sum_y2()  const {return sum_y2;}
     Eigen::VectorXd get_sum_yL1() const {return sum_yL1;}
     Eigen::VectorXd get_sum_yL2() const {return sum_yL2;}
-    Eigen::Index get_nobs() {return nobs;}
-    Eigen::Index get_ndims() {return ndims;}
+    size_t get_nobs() {return nobs;}
+    size_t get_ndims() {return ndims;}
     Eigen::MatrixXd get_data() {return y;}
     // Constructor
     //explicit QuadraticCost(Eigen::VectorXd data);
     explicit QuadraticCost(Eigen::MatrixXd data);
 
-    // Compute quadratic cost on interval [s, t) for given (p_s, p_t, v_t)
-    //double interval_cost(int s, int t, double p_s, double p_t, double v_t) const;
-    double interval_cost( Eigen::Index s
-                        , Eigen::Index t
+    // Compute quadratic cost on interval [s, t) for given (p_s, p_t, v_s)
+    //double interval_cost(int s, int t, double p_s, double p_t, double v_s) const;
+    double interval_cost( size_t s
+                        , size_t t
                         , const Eigen::VectorXd& p_s
                         , const Eigen::VectorXd& p_t
                         , const Eigen::VectorXd& v_s);

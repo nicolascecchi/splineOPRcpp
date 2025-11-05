@@ -34,6 +34,7 @@ spop <- new(SplineOP, data_matrix
               ,sigma_signal # variance
               ,12 # seed
               )
+
 spop$predict(0.0025)
 spop$get_changepoints # 217, 491, 765, 999
 cumsum(segments) # 221, 489, 755, 1000

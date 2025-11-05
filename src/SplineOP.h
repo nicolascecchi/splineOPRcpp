@@ -9,8 +9,10 @@
 #include <cmath>   // use it in Faulhaber inside the cost 
 #include <random>      // for random number generation
 #include <RcppEigen.h> // for storing values in DP loo
-#include "QuadraticCost.h" // for computing the cost 
 #include <optional> // To avoid initializing matrices at construction
+
+#include "QuadraticCost.h" // for computing the cost 
+
 
 class SplineOP
 {
@@ -40,8 +42,8 @@ class SplineOP
         Eigen::MatrixXd generate_matrix_of_noise( //MON
                                             std::mt19937& gen, 
                                             double std_dev, 
-                                            Eigen::Index rows, 
-                                            Eigen::Index cols);
+                                            size_t rows, 
+                                            size_t cols);
         void backtrack_changes();
     //public methods and attributes
     public:
@@ -72,7 +74,7 @@ class SplineOP
         void set_qc(Eigen::MatrixXd& data);
     
         //constructor
-    explicit SplineOP(Eigen::MatrixXd  data
+    explicit SplineOP(Eigen::MatrixXd data
                       ,size_t nstates
                       ,size_t nspeeds
                       ,double data_var
