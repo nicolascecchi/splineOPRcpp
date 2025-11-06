@@ -20,7 +20,8 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
     sum_y{Eigen::VectorXd::Zero(ndims)},
     sum_y2{Eigen::VectorXd::Zero(ndims)},
     sum_yL1{Eigen::VectorXd::Zero(ndims)},
-    sum_yL2{Eigen::VectorXd::Zero(ndims)}{
+    sum_yL2{Eigen::VectorXd::Zero(ndims)},
+    a{Eigen::ArrayXd::Zero(ndims)}{
   // Fill cumsum one dimension at a time
   y = data;
   for (size_t j = 0; j < ndims; ++j)  // Loop over dimensions remove cast?
@@ -48,7 +49,7 @@ double QuadraticCost::interval_cost( size_t s
 
   // Coefficients of the quadratic p(x) = a(x - x_s)^2 + b(x - x_s) + c
   double L = static_cast<double>(n);
-  Eigen::ArrayXd a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
+  a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
   Eigen::ArrayXd b = v_s.eval();
   Eigen::ArrayXd c = p_s.eval();
   //// Retrieve y-based sums from cumulative arrays.
