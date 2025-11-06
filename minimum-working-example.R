@@ -1,3 +1,10 @@
+path_cache_file <- "~/Desktop/path.txt"
+if (file.exists(path_cache_file)) {
+  Sys.setenv(PATH = readLines(path_cache_file)[1])
+} else {
+  writeLines(Sys.getenv("PATH"), path_cache_file)
+}
+
 library(splineOP)
 # Setup
 set.seed(1)
@@ -34,6 +41,6 @@ spop <- new(SplineOP, data_matrix
               ,12 # seed
               )
 
-spop$predict(0.0025)
+system.time(spop$predict(0.0025))
 spop$get_changepoints # 217, 491, 765, 999
 cumsum(segments) # 221, 489, 755, 1000
