@@ -214,6 +214,9 @@ void SplineOP::backtrack_changes()
     }
     // Reverse the order to chronological (0 → nobs)
     std::reverse(changepoints.begin(), changepoints.end());
+    for (size_t cpt = 0; cpt<changepoints.size(); cpt++){
+        changepoints[cpt] += 1;
+    }
 }
 
 

@@ -42,5 +42,5 @@ spop <- new(SplineOP, data_matrix
               )
 
 system.time(spop$predict(0.0025))
-spop$get_changepoints # 217, 491, 765, 999
+spop$get_changepoints # 1, 218, 492, 766, 1000
 cumsum(segments) # 221, 489, 755, 1000
