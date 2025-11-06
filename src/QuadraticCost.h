@@ -23,6 +23,9 @@ class QuadraticCost
     Eigen::VectorXd sum_yL2;
 
     Eigen::ArrayXd a;
+    Eigen::ArrayXd b;
+    Eigen::ArrayXd c;
+    Eigen::VectorXd aux;
   public:
     // getters
     Eigen::MatrixXd get_cumsum_y()   const {return cumsum_y;}

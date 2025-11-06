@@ -25,6 +25,10 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
   // Fill cumsum one dimension at a time
   y = data;
   a = Eigen::ArrayXd::Zero(ndims);
+  b = Eigen::ArrayXd::Zero(ndims);
+  c = Eigen::ArrayXd::Zero(ndims);
+  c = Eigen::VectorXd::Zero(ndims);
+
   for (size_t j = 0; j < ndims; ++j)  // Loop over dimensions remove cast?
   {
     for (size_t i = 0; i < nobs; ++i) // start at 1 since first is dummy at value=0 
@@ -51,15 +55,15 @@ double QuadraticCost::interval_cost( size_t s
   // Coefficients of the quadratic p(x) = a(x - x_s)^2 + b(x - x_s) + c
   double L = static_cast<double>(n);
   a = 2./std::pow(L,2) * (p_t - p_s - v_s*L);
-  Eigen::ArrayXd b = v_s.eval();
-  Eigen::ArrayXd c = p_s.eval();
+  b = v_s.eval();
+  c = p_s.eval();
   //// Retrieve y-based sums from cumulative arrays.
   //// These are effectively cusum[t-1] - cusum[s-1] 
   //// when we think our mathematical cost function
   sum_y    = cumsum_y.col(t)    - cumsum_y.col(s);
   sum_y2   = cumsum_y2.col(t)   - cumsum_y2.col(s);
   sum_yL1  = (cumsum_yL1.col(t)  - cumsum_yL1.col(s)) - (s * sum_y);
-  Eigen::VectorXd aux = cumsum_yL1.col(t)  - cumsum_yL1.col(s);
+  aux = cumsum_yL1.col(t)  - cumsum_yL1.col(s);
   sum_yL2  = (cumsum_yL2.col(t)  - cumsum_yL2.col(s)) - 2*s*aux+std::pow(s,2)*sum_y;
   //// Compute L-based sums via Faulhaber
   double sum_L1 = Faulhaber(n-1,1); //#S1(n-1);
