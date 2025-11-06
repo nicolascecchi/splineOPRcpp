@@ -1,5 +1,3 @@
-
-
 library(splineOP)
 # Setup
 set.seed(1)
@@ -31,6 +29,7 @@ Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
 spop <- new(SplineOP, data_matrix
               , 4 # states
               , 5 # speeds
+              , sp
               ,sigma_signal # variance
               ,12 # seed
               )
