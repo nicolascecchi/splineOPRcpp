@@ -27,7 +27,6 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
   a = Eigen::ArrayXd::Zero(ndims);
   b = Eigen::ArrayXd::Zero(ndims);
   c = Eigen::ArrayXd::Zero(ndims);
-  c = Eigen::VectorXd::Zero(ndims);
 
   for (size_t j = 0; j < ndims; ++j)  // Loop over dimensions remove cast?
   {
