@@ -20,10 +20,11 @@ QuadraticCost::QuadraticCost(Eigen::MatrixXd data)
     sum_y{Eigen::VectorXd::Zero(ndims)},
     sum_y2{Eigen::VectorXd::Zero(ndims)},
     sum_yL1{Eigen::VectorXd::Zero(ndims)},
-    sum_yL2{Eigen::VectorXd::Zero(ndims)},
-    a{Eigen::ArrayXd::Zero(ndims)}{
+    sum_yL2{Eigen::VectorXd::Zero(ndims)}
+  {
   // Fill cumsum one dimension at a time
   y = data;
+  a = Eigen::ArrayXd::Zero(ndims);
   for (size_t j = 0; j < ndims; ++j)  // Loop over dimensions remove cast?
   {
     for (size_t i = 0; i < nobs; ++i) // start at 1 since first is dummy at value=0 
