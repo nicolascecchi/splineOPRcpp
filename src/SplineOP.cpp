@@ -1,5 +1,6 @@
-#include "SplineOP.h"
 #include <RcppEigen.h>
+
+#include "SplineOP.h"
 #include "SpeedEstimator.h"
 // Continue with initSpeeds that has a problem with the shape and type
 
@@ -136,7 +137,6 @@ void SplineOP::predict(double beta)
                     p_s = states[s].col(i).eval(); // Get starting state position
                     if (s == 0)
                     {
-                        //Rcpp::Rcout << "Solution without change" << std::endl;
                         for (size_t spdidx = 0; spdidx < nspeeds; spdidx++){ // init speed loop
                             v_s = initSpeeds.col(spdidx).eval();
                             v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
@@ -152,7 +152,8 @@ void SplineOP::predict(double beta)
                             }
                         }                        
                     }
-                    else{   
+                    else
+                    {
                         // compute speed
                         //Rcpp::Rcout << "Changepoint time : " << s << std::endl;
                         v_s = speeds[s].col(i).eval();
@@ -162,13 +163,14 @@ void SplineOP::predict(double beta)
                         interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                         // Candidate cost (DP recurrence)
                         candidate = costs(i, s) + interval_cost + beta;         
-                        if (candidate < current_MIN){
+                        if (candidate < current_MIN)
+                        {
                             current_MIN = candidate;
                             best_speed = v_t;
                             best_i = i;
                             best_s = s;
-                              }
-                     }
+                        }
+                    }
                 }
             }
 
@@ -176,7 +178,7 @@ void SplineOP::predict(double beta)
             speeds[t].col(j) = best_speed;
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
-        }
+        }   
     }
     SplineOP::backtrack_changes();
 }
@@ -218,10 +220,6 @@ void SplineOP::backtrack_changes()
         changepoints[cpt] += 1;
     }
 }
-
-
-
-
 
 
 double SplineOP::get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s){
