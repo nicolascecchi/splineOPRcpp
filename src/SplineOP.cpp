@@ -8,10 +8,12 @@
 SplineOP::SplineOP(Eigen::MatrixXd data
                 ,size_t nstates
                 ,size_t nspeeds
+                ,std::vector<int> sp
                 ,double data_var
                 ,int seed):
      nobs{static_cast<size_t>(data.cols())}
     ,ndims{static_cast<size_t>(data.rows())}
+    ,sp{sp}
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
@@ -28,7 +30,7 @@ SplineOP::SplineOP(Eigen::MatrixXd data
         argmin_s.setConstant(-1);
 
         states = generate_states(nstates, data, data_var, seed);
-        const std::vector<int> sp{20,30,40,50,60}; //         const std::vector<int> sp{20,30,40,50,60};
+        //const std::vector<int> sp{20,30,40,50,60}; //         const std::vector<int> sp{20,30,40,50,60};
         initSpeeds = EstimateSpeeds(data, sp);
     }
 

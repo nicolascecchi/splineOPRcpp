@@ -25,7 +25,7 @@ noise_sd = 10^(-30/20) * sigma_signal
 # Make it 2D (but repeated)
 newsignal = rbind(noised1,noised2)
 data_matrix <- matrix(as.numeric(newsignal), nrow=2, ncol=1000)
-
+sp = as.numeric(c(20,30,40,50,60))
 # Load SplineOP Module
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
 spop <- new(SplineOP, data_matrix

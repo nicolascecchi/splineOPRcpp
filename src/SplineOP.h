@@ -20,6 +20,7 @@ class SplineOP
     private:
         size_t nobs; // Size of the data --> Change to npoints for being more explicit?
         size_t ndims;
+        std::vector<int> sp;
         size_t nstates;
         size_t nspeeds;
         //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
@@ -78,6 +79,7 @@ class SplineOP
     explicit SplineOP(Eigen::MatrixXd data
                       ,size_t nstates
                       ,size_t nspeeds
+                      ,std::vector<int> sp
                       ,double data_var
                       ,int seed);
 

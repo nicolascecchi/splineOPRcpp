@@ -17,6 +17,7 @@ RCPP_MODULE(splineop) {
                 Eigen::MatrixXd   // data (Must match const reference)
                 ,size_t                        // nstates
                 ,size_t                        // nspeeds
+                ,std::vector<int>           // initial speed size for estimator
                 ,double                     // data_var
                 ,int>()                       // seed
     // 2. Expose the methods
