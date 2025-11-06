@@ -28,7 +28,7 @@ SplineOP::SplineOP(Eigen::MatrixXd data
         argmin_s.setConstant(-1);
 
         states = generate_states(nstates, data, data_var, seed);
-        const std::vector<int> sp{20,30,40,50,60};
+        const std::vector<int> sp{20,30,40,50,60}; //         const std::vector<int> sp{20,30,40,50,60};
         initSpeeds = EstimateSpeeds(data, sp);
     }
 
