@@ -14,13 +14,13 @@ SplineOP::SplineOP(Eigen::MatrixXd data
                 ,int seed):
      nobs{static_cast<size_t>(data.cols())}
     ,ndims{static_cast<size_t>(data.rows())}
-    ,sp{sp}
+    ,sp{sp} // Vector w/ nb of points to estimate initial speed
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
-    ,pruning_flags(nstates,nobs)
+    ,pruning_flags(nstates,nobs) // flags out a time-state pair
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
     ,costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
-    ,pruning_costs{nstates, data.cols()}
+    ,pruning_costs{nstates, data.cols()} // Max.cost, over all ending states 'j', starting from (i,s) to arrive at (t,j).
     ,initSpeeds{data.rows(),nspeeds}
     ,states() // default initialization, overwritten in the body of the constructor
     ,argmin_i{nstates, data.cols()}
@@ -29,6 +29,7 @@ SplineOP::SplineOP(Eigen::MatrixXd data
     ,changepoints(1,static_cast<int>(data.cols())) //??? place holder, will be superseeded afterwards
     {
         costs.setConstant(std::numeric_limits<double>::infinity());
+        pruning_costs.setConstant(-std::numeric_limits<double>::infinity());
         argmin_i.setConstant(-1);
         argmin_s.setConstant(-1);
 
@@ -274,8 +275,8 @@ void SplineOP::prune(double beta)
                         }
                         if (candidate > pruning_max)
                         {
-                            pruning_max = candidate;
-                            pruning_costs(i,s) = pruning_max;
+                            pruning_max = candidate; // keep pruning_max updated for current iteration
+                            pruning_costs(i,s) = pruning_max; // update the table for future iterations 
                         }
                     }
                 }
@@ -286,9 +287,9 @@ void SplineOP::prune(double beta)
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
             // pruning step
-            for (size_t s=1;s<t; s++)
+            for (size_t s = 1; s < t; s++)
             {
-                for(size_t i=0; i<nstates; i++)
+                for(size_t i = 0; i < nstates; i++)
                 {
                     if(current_MIN < pruning_costs(i,s))
                     {
@@ -296,7 +297,7 @@ void SplineOP::prune(double beta)
                     }
                 }
             }
-
+            pruning_costs.setConstant(-std::numeric_limits<double>::infinity());
         }   
     }
     SplineOP::backtrack_changes();
