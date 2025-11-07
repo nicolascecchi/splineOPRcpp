@@ -29,7 +29,7 @@ SplineOP::SplineOP(Eigen::MatrixXd data
     ,changepoints(1,static_cast<int>(data.cols())) //??? place holder, will be superseeded afterwards
     {
         costs.setConstant(std::numeric_limits<double>::infinity());
-        pruning_costs.setConstant(-std::numeric_limits<double>::infinity());
+        pruning_costs.setConstant(std::numeric_limits<double>::infinity());
         argmin_i.setConstant(-1);
         argmin_s.setConstant(-1);
 
@@ -207,10 +207,15 @@ void SplineOP::prune(double beta)
     double current_MIN = std::numeric_limits<double>::infinity();
     int best_i = -1;
     int best_s = -1;
-    double pruning_max;
+    double pruning_min;
     // reinitialize changepoints and costs for new fit (small overhead for first time)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
     costs.setConstant(std::numeric_limits<double>::infinity());
+    pruning_costs.setConstant(std::numeric_limits<double>::infinity());
+    for (size_t row=0; row<nstates; row++) 
+    {
+        pruning_flags.row(row).setConstant(row);
+    }
 
     // Loop over data
     for (size_t t = 1; t < nobs; t++)
@@ -225,7 +230,7 @@ void SplineOP::prune(double beta)
             // Find the best solution (state j,time t)
             for (size_t s = 0; s < t; s++)
             { // previous times
-                Rcpp::checkUserInterrupt(); // allow user interruption
+                //Rcpp::checkUserInterrupt(); // allow user interruption
                 for (size_t i = 0; i < nstates; i++)
                 if (pruning_flags(i,s) == -1)
                 {
@@ -234,7 +239,7 @@ void SplineOP::prune(double beta)
                 }
                 else
                 { // previous state loop
-                    pruning_max = pruning_costs(i,s);
+                    pruning_min = pruning_costs(i,s);
                     // Fix start and end position in time and space
                     p_s = states[s].col(i).eval(); // Get starting state position
                     if (s == 0)
@@ -273,10 +278,9 @@ void SplineOP::prune(double beta)
                             best_i = i;
                             best_s = s;
                         }
-                        if (candidate > pruning_max)
+                        if (candidate < pruning_min)
                         {
-                            pruning_max = candidate; // keep pruning_max updated for current iteration
-                            pruning_costs(i,s) = pruning_max; // update the table for future iterations 
+                            pruning_costs(i,s) = candidate; // update the table for future iterations 
                         }
                     }
                 }
@@ -286,19 +290,20 @@ void SplineOP::prune(double beta)
             speeds[t].col(j) = best_speed;
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
-            // pruning step
-            for (size_t s = 1; s < t; s++)
+        }
+        // Set pruning flags
+        double min_jt = costs.col(t).minCoeff(); // Best cost at time t
+        for (size_t s = 1; s < t; s++)
+        {
+            for(size_t i = 0; i < nstates; i++)
             {
-                for(size_t i = 0; i < nstates; i++)
+                if(min_jt < pruning_costs(i,s))
                 {
-                    if(current_MIN < pruning_costs(i,s))
-                    {
-                        pruning_flags(i,s) = -1;
-                    }
+                    pruning_flags(i,s) = -1;
                 }
             }
-            pruning_costs.setConstant(-std::numeric_limits<double>::infinity());
-        }   
+        }
+        pruning_costs.setConstant(std::numeric_limits<double>::infinity());
     }
     SplineOP::backtrack_changes();
 }
