@@ -39,6 +39,7 @@ RCPP_MODULE(splineop) {
         .property("get_sum_y2", &SplineOP::get_sum_y2)
         .property("get_sum_yL1", &SplineOP::get_sum_yL1)
         .property("get_sum_yL2", &SplineOP::get_sum_yL2)
+        .property("get_pruning_flags", &SplineOP::get_pruning_flags)
 
         .method("set_qc", &SplineOP::set_qc)
         .method("get_segment_cost", &SplineOP::get_segment_cost) 
