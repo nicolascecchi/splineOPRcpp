@@ -40,10 +40,12 @@ RCPP_MODULE(splineop) {
         .property("get_sum_yL1", &SplineOP::get_sum_yL1)
         .property("get_sum_yL2", &SplineOP::get_sum_yL2)
         .property("get_pruning_flags", &SplineOP::get_pruning_flags)
+        .property("get_pruning_costs", &SplineOP::get_pruning_costs)
 
         .method("set_qc", &SplineOP::set_qc)
         .method("get_segment_cost", &SplineOP::get_segment_cost) 
-        .method("predict", &SplineOP::predict, "Predicts changepoints with given penalty");
+        .method("predict", &SplineOP::predict, "Predicts changepoints with given penalty")
+        .method("prune", &SplineOP::prune, "Predicts with pruning.");
         
     // EXPOSE QUADRATIC COST CLASS TO R
 

@@ -65,6 +65,7 @@ class SplineOP
         Eigen::MatrixXi get_argmin_i() const {return argmin_i;}
         Eigen::MatrixXi get_argmin_s() const {return argmin_s;}
         Eigen::Array<int, Eigen::Dynamic, Eigen::Dynamic> get_pruning_flags() const {return pruning_flags;}
+        Eigen::MatrixXd get_pruning_costs() const {return pruning_costs;}
         double get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s); // compute a cost with given parameters
         
         // Cost getters
