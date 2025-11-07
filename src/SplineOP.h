@@ -5,6 +5,7 @@
 #include <iostream> // WHY?
 #include <algorithm> // USE IT BUT CHEKC WHY
 #include <vector>   // Store changepoints, and other (?)
+#include <numeric> // for iota initialization of the pruning_flags when pruning
 #include <limits>   // Use it to have the infinity for the CURRENT_MIN cost
 #include <cmath>   // use it in Faulhaber inside the cost 
 #include <random>      // for random number generation
@@ -23,10 +24,12 @@ class SplineOP
         std::vector<int> sp;
         size_t nstates;
         size_t nspeeds;
+        Eigen::Array<int, Eigen::Dynamic, Eigen::Dynamic> pruning_flags;
         //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
         
         std::vector<Eigen::MatrixXd> speeds; // best speed holder
-        Eigen::MatrixXd costs;  // matrix of costs
+        Eigen::MatrixXd costs;
+        Eigen::MatrixXd pruning_costs;  // matrix of costs
         Eigen::MatrixXd initSpeeds; //  to check if matrix or vector ; set of initial speeds;
         std::vector<Eigen::MatrixXd> states; // sets of state for each time 
         
@@ -51,7 +54,7 @@ class SplineOP
     public:
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(double beta); // predicts with a given penalty
-
+        void prune(double beta);
 
         //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
@@ -61,6 +64,7 @@ class SplineOP
         std::vector<Eigen::MatrixXd> get_states() const {return states;}
         Eigen::MatrixXi get_argmin_i() const {return argmin_i;}
         Eigen::MatrixXi get_argmin_s() const {return argmin_s;}
+        Eigen::Array<int, Eigen::Dynamic, Eigen::Dynamic> get_pruning_flags() const {return pruning_flags;}
         double get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s); // compute a cost with given parameters
         
         // Cost getters
@@ -72,6 +76,7 @@ class SplineOP
         Eigen::VectorXd get_sum_y2()  const {return qc.get_sum_y2();}
         Eigen::VectorXd get_sum_yL1() const {return qc.get_sum_yL1();}
         Eigen::VectorXd get_sum_yL2() const {return qc.get_sum_yL2();}
+        
 
         void set_qc(Eigen::MatrixXd& data);
     

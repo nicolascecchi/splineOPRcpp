@@ -5,7 +5,7 @@
 // Continue with initSpeeds that has a problem with the shape and type
 
 
-// Define the construction
+// constructor
 SplineOP::SplineOP(Eigen::MatrixXd data
                 ,size_t nstates
                 ,size_t nspeeds
@@ -17,8 +17,10 @@ SplineOP::SplineOP(Eigen::MatrixXd data
     ,sp{sp}
     ,nstates{nstates}   
     ,nspeeds{nspeeds}
+    ,pruning_flags(nstates,nobs)
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
     ,costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
+    ,pruning_costs{nstates, data.cols()}
     ,initSpeeds{data.rows(),nspeeds}
     ,states() // default initialization, overwritten in the body of the constructor
     ,argmin_i{nstates, data.cols()}
@@ -33,6 +35,15 @@ SplineOP::SplineOP(Eigen::MatrixXd data
         states = generate_states(nstates, data, data_var, seed);
         //const std::vector<int> sp{20,30,40,50,60}; //         const std::vector<int> sp{20,30,40,50,60};
         initSpeeds = EstimateSpeeds(data, sp);
+        // initialize pruning_flags with values from 
+        for (size_t row=0; row<nstates; row++) 
+        {
+            // Each pruning_flags(i,s) holds either it's own state index
+            // or a -1 flag indicating that the state-time pair should not be evaluated
+            // at the beginning, all pairs are evaluated. 
+            pruning_flags.row(row).setConstant(row);
+        }
+
     }
 
 
@@ -178,6 +189,114 @@ void SplineOP::predict(double beta)
             speeds[t].col(j) = best_speed;
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
+        }   
+    }
+    SplineOP::backtrack_changes();
+}
+
+void SplineOP::prune(double beta)
+{
+    Eigen::VectorXd v_s;
+    Eigen::VectorXd v_t;
+    Eigen::VectorXd p_s;
+    Eigen::VectorXd p_t;
+    Eigen::VectorXd best_speed;
+    double interval_cost;
+    double candidate;
+    double current_MIN = std::numeric_limits<double>::infinity();
+    int best_i = -1;
+    int best_s = -1;
+    double pruning_max;
+    // reinitialize changepoints and costs for new fit (small overhead for first time)
+    changepoints = std::vector(1,static_cast<int>(nobs-1)); 
+    costs.setConstant(std::numeric_limits<double>::infinity());
+
+    // Loop over data
+    for (size_t t = 1; t < nobs; t++)
+    { // current last point
+        for (size_t j = 0; j < nstates; j++)
+        { // current last state
+            p_t = states[t].col(j).eval(); // Fix final position
+            current_MIN = std::numeric_limits<double>::infinity();
+            best_speed;
+            best_i = -1;
+            best_s = -1;
+            // Find the best solution (state j,time t)
+            for (size_t s = 0; s < t; s++)
+            { // previous times
+                Rcpp::checkUserInterrupt(); // allow user interruption
+                for (size_t i = 0; i < nstates; i++)
+                if (pruning_flags(i,s) == -1)
+                {
+                    // do not evaluate the candidate
+                    // pass doing nothing
+                }
+                else
+                { // previous state loop
+                    pruning_max = pruning_costs(i,s);
+                    // Fix start and end position in time and space
+                    p_s = states[s].col(i).eval(); // Get starting state position
+                    if (s == 0)
+                    {
+                        for (size_t spdidx = 0; spdidx < nspeeds; spdidx++){ // init speed loop
+                            v_s = initSpeeds.col(spdidx).eval();
+                            v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
+                            // Quadratic cost for interval [s, t)
+                            interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                            // Candidate cost (DP recurrence)
+                            candidate = interval_cost;
+                            if (candidate < current_MIN)
+                            {
+                                current_MIN = candidate;
+                                best_speed = v_t;
+                                best_i = i;
+                                best_s = s;
+                            }
+                        }                        
+                    }
+                    else
+                    {
+                        // compute speed
+                        //Rcpp::Rcout << "Changepoint time : " << s << std::endl;
+                        v_s = speeds[s].col(i).eval();
+                        v_t = 2*(p_t - p_s)/(t - s) - v_s; 
+                        // Quadratic cost for interval [s, t)
+                        // THIS INTERVAL COST IS BREAKING THE CODE 
+                        interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                        // Candidate cost (DP recurrence)
+                        candidate = costs(i, s) + interval_cost + beta;         
+                        if (candidate < current_MIN)
+                        {
+                            current_MIN = candidate;
+                            best_speed = v_t;
+                            best_i = i;
+                            best_s = s;
+                        }
+                        if (candidate > pruning_max)
+                        {
+                            pruning_max = candidate;
+                            pruning_costs(i,s) = pruning_max;
+                        }
+                    }
+                }
+            }
+
+            costs(j, t) = current_MIN;
+            speeds[t].col(j) = best_speed;
+            argmin_i(j, t) = best_i;
+            argmin_s(j, t) = best_s;
+            // pruning step
+            for (size_t s=1;s<t; s++)
+            {
+                for(size_t i=0; i<nstates; i++)
+                {
+                    if(current_MIN < pruning_costs(i,s))
+                    {
+                        pruning_flags(i,s) = -1;
+                    }
+                }
+            }
+
         }   
     }
     SplineOP::backtrack_changes();
