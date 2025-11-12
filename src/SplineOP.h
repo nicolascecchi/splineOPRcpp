@@ -52,7 +52,7 @@ class SplineOP
     public:
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(double beta); // predicts with a given penalty
-        //void predict(int K); // predicts with a given penalty
+        void pruning(double beta); // predicts with a given penalty
 
 
         //// Getters
