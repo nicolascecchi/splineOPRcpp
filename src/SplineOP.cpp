@@ -1,4 +1,4 @@
-#include <RcppEigen.h>
+#include <Eigen/Dense>
 
 #include "SplineOP.h"
 #include "SpeedEstimator.h"
@@ -101,6 +101,7 @@ Eigen::MatrixXd SplineOP::generate_matrix_of_noise( //MON
     return matrix_of_noise;
 }
 
+// Penalized version
 void SplineOP::predict(double beta)
 {
     Eigen::VectorXd v_s;
@@ -130,7 +131,7 @@ void SplineOP::predict(double beta)
             // Find the best solution (state j,time t)
             for (size_t s = 0; s < t; s++)
             { // previous times
-                Rcpp::checkUserInterrupt(); // allow user interruption
+                //Rcpp::checkUserInterrupt(); // allow user interruption
                 for (size_t i = 0; i < nstates; i++)
                 { // previous state
                     // Fix start and end position in time and space

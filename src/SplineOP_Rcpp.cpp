@@ -1,5 +1,6 @@
 #include <RcppCommon.h>
 #include <Rcpp.h>
+#include <RcppEigen.h>
 #include "SplineOP.h"
 #include "QuadraticCost.h"
 //====================================================================

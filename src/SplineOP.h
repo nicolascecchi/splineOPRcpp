@@ -1,14 +1,15 @@
 #ifndef SPLINEOP_H
 #define SPLINEOP_H
 
-#include <Rcpp.h> // For binding with R
+//#include <Rcpp.h> // For binding with R
 #include <iostream> // WHY?
 #include <algorithm> // USE IT BUT CHEKC WHY
 #include <vector>   // Store changepoints, and other (?)
 #include <limits>   // Use it to have the infinity for the CURRENT_MIN cost
 #include <cmath>   // use it in Faulhaber inside the cost 
 #include <random>      // for random number generation
-#include <RcppEigen.h> // for storing values in DP loo
+//#include <RcppEigen.h> // for storing values in DP loo
+#include <Eigen/Dense>
 #include <optional> // To avoid initializing matrices at construction
 
 #include "QuadraticCost.h" // for computing the cost 
@@ -51,6 +52,7 @@ class SplineOP
     public:
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(double beta); // predicts with a given penalty
+        //void predict(int K); // predicts with a given penalty
 
 
         //// Getters
