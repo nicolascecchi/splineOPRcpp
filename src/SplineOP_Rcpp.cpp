@@ -45,7 +45,10 @@ RCPP_MODULE(splineop) {
         .method("set_qc", &SplineOP::set_qc)
         .method("get_segment_cost", &SplineOP::get_segment_cost) 
         .method("predict", &SplineOP::predict, "Predicts changepoints with given penalty")
-        .method("prune", &SplineOP::prune, "Predicts with pruning.");
+        .method("prune", &SplineOP::prune, "Predicts with pruning.")
+        
+        .method("set_initSpeeds", &SplineOP::set_initSpeeds)
+        .method("set_states", &SplineOP::set_states);
         
     // EXPOSE QUADRATIC COST CLASS TO R
 
