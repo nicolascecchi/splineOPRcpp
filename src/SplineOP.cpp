@@ -19,6 +19,8 @@ SplineOP::SplineOP(Eigen::MatrixXd data
     ,nspeeds{nspeeds}
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
     ,costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
+    ,pruning_costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
+    ,times_for_states(nstates, {0})
     ,initSpeeds{data.rows(),nspeeds}
     ,states() // default initialization, overwritten in the body of the constructor
     ,argmin_i{nstates, data.cols()}
@@ -201,26 +203,25 @@ void SplineOP::pruning(double beta)
     // reinitialize changepoints and costs for new fit (small overhead for first time)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
     costs.setConstant(std::numeric_limits<double>::infinity());
-    std::vector<std::vector<size_t>> times_for_states;
-    size_t s;
+    pruning_costs.setConstant(std::numeric_limits<double>::infinity());
 
-    // Loop over data
+    // Big loop that goes through time
     for (size_t t = 1; t < nobs; t++)
-    { // current last point
+    { // Loop over the ending states at current time t 
         for (size_t j = 0; j < nstates; j++)
-        { // current last state
+        {
             p_t = states[t].col(j).eval(); // Fix final position
-            current_MIN = std::numeric_limits<double>::infinity();
+            current_MIN = std::numeric_limits<double>::infinity(); // set up variables used for optimization
             best_speed;
             best_i = -1;
             best_s = -1;
-            // Find the best solution (state j,time t)
+            // Double loop over all accessible previous time-state pairs
+            // finds the best accessible solution for Q(j,t)
+            // Loop 1: Over all the states
             for (size_t i=0; i<nstates; i++)
-            { // previous times
-                for (std::vector<size_t>::const_iterator it = times_for_states[i].begin(); it != times_for_states[i].end(); ++it)
-                { // previous state
-                    s = *it; 
-                    // Fix start and end position in time and space
+            {   // Loop 2: Over time positions that are still alive for that state index
+                for (size_t s : times_for_states[i])
+                {
                     p_s = states[s].col(i).eval(); // Get starting state position
                     if (s == 0)
                     {
@@ -237,8 +238,12 @@ void SplineOP::pruning(double beta)
                                 best_i = i;
                                 best_s = s;
                             }
+                            if (candidate < pruning_costs(i,s))
+                            {
+                            pruning_costs(i,s) = candidate;
+                            }
                         }                        
-                    }
+                    } // end of cost without changepoint before
                     else
                     {
                         // compute speed
@@ -256,25 +261,49 @@ void SplineOP::pruning(double beta)
                             best_i = i;
                             best_s = s;
                         }
-                    }
-                }
-            }
-
+                        if ((candidate-beta) < pruning_costs(i,s))
+                        {
+                            pruning_costs(i,s) = candidate;
+                        }
+                    } // end of cost with at least 1 changepoint before
+                } // end of times for a given position index
+            } // end of position index
+            
+            // Fill best found solutions
             costs(j, t) = current_MIN;
             speeds[t].col(j) = best_speed;
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
-        } // end of (t,j)
-        // prune here
-        
-        
-        // add new last point
-
-        
-    }
+        } // end of state j for time t 
+        prune(t); 
+    } // end of t
     SplineOP::backtrack_changes();
 }
-
+void SplineOP::prune(size_t t)
+{
+    // PRUNING
+        double min_jt = costs.col(t).minCoeff(); // Best cost at time t
+        // parcourir all the state indexes 
+        for (size_t i = 0; i < nstates; i++) 
+        {
+            std::vector<size_t>& times_vec = times_for_states[i];
+            for (auto it = times_vec.begin(); it != times_vec.end(); ) 
+            {
+                size_t s = *it; // Get the time index
+                if (min_jt < pruning_costs(i, s)) 
+                {
+                    //std::cout << "At time "<< t+1 << " prune time " << s+1 << " with cost " <<pruning_costs(i,s) << " > " << min_jt << std::endl;
+                    it = times_vec.erase(it); 
+                } 
+                else 
+                {
+                    ++it;
+                }
+            }
+            times_vec.push_back(t); 
+        }
+        pruning_costs.setConstant(std::numeric_limits<double>::infinity());
+}
 
 void SplineOP::backtrack_changes()
 {
