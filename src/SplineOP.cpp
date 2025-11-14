@@ -357,3 +357,11 @@ double SplineOP::get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::Vect
 void SplineOP::set_qc(Eigen::MatrixXd& data){
     qc = QuadraticCost(data);  // Initialize the cost function with the provided data
 }
+void SplineOP::set_states(std::vector<Eigen::MatrixXd> new_states){
+    states = new_states;
+    nstates = new_states[0].cols(); // assume that all time have the same nb of states
+}
+void SplineOP::set_initSpeeds(Eigen::MatrixXd new_initSpeeds){
+    initSpeeds = new_initSpeeds;
+    nspeeds = new_initSpeeds.cols();
+}
