@@ -69,6 +69,10 @@ class SplineOP
         double get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s); // compute a cost with given parameters
         Eigen::MatrixXd get_pruning_costs() const {return pruning_costs;}
         std::vector<std::vector<size_t>> get_non_pruned_times() const {return times_for_states;}
+        //setters 
+        void set_states(std::vector<Eigen::MatrixXd> new_states);// {states = new_states;}
+        void set_initSpeeds(Eigen::MatrixXd new_initSpeeds);// {initSpeeds = new_initSpeeds;}
+
 
         // Cost getters
         Eigen::MatrixXd get_cumsum_y()   const {return qc.get_cumsum_y();}
