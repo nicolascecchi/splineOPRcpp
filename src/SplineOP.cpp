@@ -162,7 +162,6 @@ void SplineOP::predict(double beta)
                         v_s = speeds[s].col(i).eval();
                         v_t = 2*(p_t - p_s)/(t - s) - v_s; 
                         // Quadratic cost for interval [s, t)
-                        // THIS INTERVAL COST IS BREAKING THE CODE 
                         interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                         // Candidate cost (DP recurrence)
                         candidate = costs(i, s) + interval_cost + beta;         
@@ -204,6 +203,8 @@ void SplineOP::pruning(double beta)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
     costs.setConstant(std::numeric_limits<double>::infinity());
     pruning_costs.setConstant(std::numeric_limits<double>::infinity());
+    std::vector<std::vector<size_t>> initial_value(nstates, std::vector<size_t>{0});
+    times_for_states.assign(initial_value.begin(), initial_value.end());
 
     // Big loop that goes through time
     for (size_t t = 1; t < nobs; t++)
@@ -270,6 +271,8 @@ void SplineOP::pruning(double beta)
             } // end of position index
             
             // Fill best found solutions
+            // std::cout<< "j: " << j << " t: " << t <<std::endl; 
+            // std::cout<< "curr min: " << current_MIN << "best sp: " << best_speed <<std::endl; 
             costs(j, t) = current_MIN;
             speeds[t].col(j) = best_speed;
             argmin_i(j, t) = best_i;
@@ -282,17 +285,20 @@ void SplineOP::pruning(double beta)
 void SplineOP::prune(size_t t)
 {
     // PRUNING
+        std::cout << "===============================================================  " << t << "===============================================================  " << std::endl;
         double min_jt = costs.col(t).minCoeff(); // Best cost at time t
         // parcourir all the state indexes 
         for (size_t i = 0; i < nstates; i++) 
         {
+            std::cout << "Pruning for state idxs " << i << std::endl;
             std::vector<size_t>& times_vec = times_for_states[i];
             for (auto it = times_vec.begin(); it != times_vec.end(); ) 
             {
                 size_t s = *it; // Get the time index
                 if (min_jt < pruning_costs(i, s)) 
                 {
-                    //std::cout << "At time "<< t+1 << " prune time " << s+1 << " with cost " <<pruning_costs(i,s) << " > " << min_jt << std::endl;
+                    std::cout << "At time "<< t+1 << " prune time " << s+1 << std::endl;
+                    std::cout << " with pruning cost " <<pruning_costs(i,s) << " > min " << min_jt << std::endl;
                     it = times_vec.erase(it); 
                 } 
                 else 
