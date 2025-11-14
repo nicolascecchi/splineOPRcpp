@@ -46,7 +46,11 @@ RCPP_MODULE(splineop) {
         .method("predict", &SplineOP::predict, "Predicts changepoints with given penalty.")
         .method("pruning", &SplineOP::pruning, "Predicts changepoints with given penalty and pruning.")
         .method("get_pruning_costs", &SplineOP::get_pruning_costs, "Should be useless at the end, all +inf.")
-        .method("get_non_pruned_times", &SplineOP::get_non_pruned_times, "Non pruned times at the end.");
+        .method("get_non_pruned_times", &SplineOP::get_non_pruned_times, "Non pruned times at the end.")
+        
+        .method("set_initSpeeds", &SplineOP::set_initSpeeds)
+        .method("set_states", &SplineOP::set_states);
+        
         
     // EXPOSE QUADRATIC COST CLASS TO R
 
