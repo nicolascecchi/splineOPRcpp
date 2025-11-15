@@ -44,7 +44,8 @@ RCPP_MODULE(splineop) {
         .method("set_qc", &SplineOP::set_qc)
         .method("get_segment_cost", &SplineOP::get_segment_cost) 
         .method("predict", &SplineOP::predict, "Predicts changepoints with given penalty.")
-        .method("pruning", &SplineOP::pruning, "Predicts changepoints with given penalty and pruning.")
+        .method("pruningv1", &SplineOP::pruningv1, "Predicts changepoints with given penalty and pruning.")
+        .method("pruningv2", &SplineOP::pruningv2, "Predicts changepoints with given penalty and pruning.")
         .method("get_pruning_costs", &SplineOP::get_pruning_costs, "Should be useless at the end, all +inf.")
         .method("get_non_pruned_times", &SplineOP::get_non_pruned_times, "Non pruned times at the end.")
         

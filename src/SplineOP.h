@@ -50,12 +50,14 @@ class SplineOP
                                             size_t rows, 
                                             size_t cols);
         void backtrack_changes();
-        void prune(size_t t);
+        void prunev1(size_t t, double margin);
+        void prunev2(size_t t);
     //public methods and attributes
     public:
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(double beta); // predicts with a given penalty
-        void pruning(double beta); // predicts with a given penalty
+        void pruningv1(double beta, double margin); // predicts with a given penalty
+        void pruningv2(double beta); // predicts with a given penalty
 
 
         //// Getters

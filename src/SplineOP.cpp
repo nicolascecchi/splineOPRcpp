@@ -185,9 +185,7 @@ void SplineOP::predict(double beta)
     SplineOP::backtrack_changes();
 }
 
-
-// Penalized version
-void SplineOP::pruning(double beta)
+void SplineOP::pruningv1(double beta, double margin)
 {
     Eigen::VectorXd v_s;
     Eigen::VectorXd v_t;
@@ -278,11 +276,177 @@ void SplineOP::pruning(double beta)
             argmin_i(j, t) = best_i;
             argmin_s(j, t) = best_s;
         } // end of state j for time t 
-        prune(t); 
+        prunev1(t, margin); 
     } // end of t
     SplineOP::backtrack_changes();
 }
-void SplineOP::prune(size_t t)
+
+
+// Penalized version
+void SplineOP::pruningv2(double beta)
+{
+    Eigen::VectorXd v_s;
+    Eigen::VectorXd v_t;
+    Eigen::VectorXd p_s;
+    Eigen::VectorXd p_t;
+    Eigen::VectorXd best_speed;
+    double interval_cost;
+    double candidate;
+    double current_MIN = std::numeric_limits<double>::infinity();
+    int best_i = -1;
+    int best_s = -1;
+    // reinitialize changepoints and costs for new fit (small overhead for first time)
+    changepoints = std::vector(1,static_cast<int>(nobs-1)); 
+    costs.setConstant(std::numeric_limits<double>::infinity());
+    pruning_costs.setConstant(std::numeric_limits<double>::infinity());
+    std::vector<std::vector<size_t>> initial_value(nstates, std::vector<size_t>{0});
+    times_for_states.assign(initial_value.begin(), initial_value.end());
+
+    // Big loop that goes through time
+    for (size_t t = 1; t < nobs; t++)
+    { // Loop over the ending states at current time t 
+        for (size_t j = 0; j < nstates; j++)
+        {
+            p_t = states[t].col(j).eval(); // Fix final position
+            current_MIN = std::numeric_limits<double>::infinity(); // set up variables used for optimization
+            best_speed;
+            best_i = -1;
+            best_s = -1;
+            // Double loop over all accessible previous time-state pairs
+            // finds the best accessible solution for Q(j,t)
+            // Loop 1: Over all the states
+            for (size_t i=0; i<nstates; i++)
+            {   // Loop 2: Over time positions that are still alive for that state index
+                for (size_t s : times_for_states[i])
+                {
+                    p_s = states[s].col(i).eval(); // Get starting state position
+                    if (s == 0)
+                    {
+                        for (size_t spdidx = 0; spdidx < nspeeds; spdidx++){ // init speed loop
+                            v_s = initSpeeds.col(spdidx).eval();
+                            v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
+                            // Quadratic cost for interval [s, t)
+                            interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                            // Candidate cost (DP recurrence)
+                            candidate = interval_cost;
+                            if (candidate < current_MIN){
+                                current_MIN = candidate;
+                                best_speed = v_t;
+                                best_i = i;
+                                best_s = s;
+                            }
+                            if (candidate < pruning_costs(i,s))
+                            {
+                            pruning_costs(i,s) = candidate;
+                            }
+                        }                        
+                    } // end of cost without changepoint before
+                    else
+                    {
+                        // compute speed
+                        v_s = speeds[s].col(i).eval();
+                        v_t = 2*(p_t - p_s)/(t - s) - v_s; 
+                        // Quadratic cost for interval [s, t)
+                        // THIS INTERVAL COST IS BREAKING THE CODE 
+                        interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                        // Candidate cost (DP recurrence)
+                        candidate = costs(i, s) + interval_cost + beta;         
+                        if (candidate < current_MIN)
+                        {
+                            current_MIN = candidate;
+                            best_speed = v_t;
+                            best_i = i;
+                            best_s = s;
+                        }
+                        if ((candidate-beta) < pruning_costs(i,s))
+                        {
+                            pruning_costs(i,s) = candidate;
+                        }
+                    } // end of cost with at least 1 changepoint before
+                } // end of times for a given position index
+            } // end of position index
+            
+            // Fill best found solutions
+            // std::cout<< "j: " << j << " t: " << t <<std::endl; 
+            // std::cout<< "curr min: " << current_MIN << "best sp: " << best_speed <<std::endl; 
+            costs(j, t) = current_MIN;
+            speeds[t].col(j) = best_speed;
+            argmin_i(j, t) = best_i;
+            argmin_s(j, t) = best_s;
+        } // end of state j for time t 
+        prunev2(t); 
+    } // end of t
+    SplineOP::backtrack_changes();
+}
+
+void SplineOP::prunev1(size_t t, double margin)
+{
+    Eigen::VectorXd v_s;
+    Eigen::VectorXd v_t;
+    Eigen::VectorXd p_s;
+    Eigen::VectorXd p_t;
+    double interval_cost;
+    double candidate;
+    double best_cost_jt;
+    size_t counter;
+
+    // PRUNING
+        //std::cout << "=============================================  " << t << "  =============================================" << std::endl;
+    // parcourir all the state indexes 
+    for (size_t i = 0; i < nstates; i++) 
+    {
+        std::vector<size_t>& times_vec = times_for_states[i];
+        for (auto it = times_vec.begin(); it != times_vec.end(); ) 
+        {   
+            size_t s = *it;
+            counter = 0 ; // reinitialize counter for each (i, s)
+            if (s == 0)
+                { // For the moment leave this like that, need a fix in the future to also prune
+                    //for (size_t spdidx = 0; spdidx < nspeeds; spdidx++)
+                    //{ // init speed loop
+                    //    v_s = initSpeeds.col(spdidx).eval();
+                    //    v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
+                    //    // Quadratic cost for interval [s, t)
+                    //    interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                    //    // Candidate cost (DP recurrence)
+                    //    candidate = interval_cost;
+                    //    if (candidate < pruning_costs(i,s))
+                    //    {
+                    //    pruning_costs(i,s) = candidate;
+                    //    }
+                    //}                        
+                } // end of cost without changepoint before
+                else
+                {
+                    // Evaluate all ending states
+                    for(size_t j = 0; j<nstates; j++)
+                    {
+                        p_s = states[s].col(i).eval();
+                        p_t = states[t].col(j).eval();
+                        v_s = speeds[s].col(i).eval();
+                        interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
+                        candidate = costs(i, s) + interval_cost;         
+                        if (candidate > costs(j,t)+margin)
+                        {counter++;}
+                    }
+                    
+                }
+                // Get the time index
+            if (counter == nstates) 
+            {
+                it = times_vec.erase(it); 
+            } 
+            else 
+            {
+                ++it;
+            }
+        }
+        times_vec.push_back(t); 
+    }
+}
+
+
+void SplineOP::prunev2(size_t t)
 {
     // PRUNING
         std::cout << "===============================================================  " << t << "===============================================================  " << std::endl;
