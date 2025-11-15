@@ -33,7 +33,7 @@ data_matrix <- matrix(as.numeric(newsignal), nrow=2, ncol=1000)
 sp = as.numeric(c(20,30,40,50,60))
 # Load SplineOP Module
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
-spop <- new(SplineOP, data_matrix , 4 , 5 , sp,sigma_signal,12 )
+spop <- new(SplineOP, data_matrix , 5 , 5 , sp,sigma_signal,12 )
 
 system.time(spop$predict(0.0025))
 spop$get_changepoints # 1, 218, 492, 766, 1000
