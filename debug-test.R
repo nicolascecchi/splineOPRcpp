@@ -1,12 +1,10 @@
 
-
-library(splineOP)
-set.seed(1)
-K <- 2
-segments <- generate_segment_lengths(20, K,alpha = rep(100,K))
-accelerations <- c(5,-30)
-result <- generate_Qsplines(segments, accelerations, max1 = TRUE)
-signal <- generate_Qspline_signal(result, segments, noise_sd = 0.025)
+path_cache_file <- "~/Desktop/path.txt"
+if (file.exists(path_cache_file)) {
+  Sys.setenv(PATH = readLines(path_cache_file)[1])
+} else {
+  writeLines(Sys.getenv("PATH"), path_cache_file)
+}
 Rcpp::sourceCpp("./src/SplineOP_Rcpp.cpp")
 
 newsignal = rbind(signal,signal)
