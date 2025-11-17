@@ -34,12 +34,10 @@ data_matrix <- matrix(as.numeric(rbind(noised1,noised2)), nrow=2, ncol=10000)
 # data, nstates, nspeeds, speed estimator lenght, variance for state generation, seed for state generation
 sp = as.numeric(c(200,400,600,800,1000))
 #spop1 <- new(SplineOP, data_matrix , 10 , 1 , sp,sigma_signal1,12 )
-spop <- new(SplineOP, data_matrix , 5 , 5 , sp,sigma_signal1,12 )
-result1$v
-result2$v
-spop$get_initSpeeds
+spop <- new(SplineOP, data_matrix , 5 , 5 , sp,sigma_signal,12 )
+
 beta = 0.00125
-system.time(spop$pruningv1(beta, beta/2))
-spop$get_changepoints # 1, 218, 492, 766, 1000
-cumsum(segments) # 221, 489, 755, 1000
-spop$get_pruning_flags
+system.time(spop$pruningv1(beta, beta/2)) # 10k points, 8sec
+spop$get_changepoints # 1  1866  4033  6287  8356 10000
+cumsum(segments)      # 1  1839  4070  6288  8331 10000
+
