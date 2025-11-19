@@ -2,6 +2,7 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
 #include "SplineOP.h"
+#include "SplineOP_constrained.h"
 #include "QuadraticCost.h"
 //====================================================================
 // This is what exposes your C++ class to R.
@@ -52,7 +53,41 @@ RCPP_MODULE(splineop) {
         .method("set_initSpeeds", &SplineOP::set_initSpeeds)
         .method("set_states", &SplineOP::set_states);
         
-        
+    // Expose constrained version of SplineOP 
+    Rcpp::class_<SplineOP_constrained>("SplineOP_constrained_constrained")
+    // 1. Expose the constructor
+        .constructor<
+                Eigen::MatrixXd   // data (Must match const reference)
+                ,size_t                        // nstates
+                ,size_t                        // nspeeds
+                ,std::vector<int>           // initial speed size for estimator
+                ,double                     // data_var
+                ,int>()                       // seed
+        .property("get_changepoints", &SplineOP_constrained::get_changepoints) 
+        .property("get_speeds", &SplineOP_constrained::get_speeds) 
+        .property("get_costs", &SplineOP_constrained::get_costs) 
+        .property("get_initSpeeds", &SplineOP_constrained::get_initSpeeds) 
+        .property("get_states", &SplineOP_constrained::get_states) 
+        .property("get_argmin_i", &SplineOP_constrained::get_argmin_i) 
+        .property("get_argmin_s", &SplineOP_constrained::get_argmin_s)
+
+        .property("get_cumsum_y", &SplineOP_constrained::get_cumsum_y)
+        .property("get_cumsum_y2", &SplineOP_constrained::get_cumsum_y2)
+        .property("get_cumsum_yL1", &SplineOP_constrained::get_cumsum_yL1)
+        .property("get_cumsum_yL2", &SplineOP_constrained::get_cumsum_yL2)
+        .property("get_sum_y", &SplineOP_constrained::get_sum_y)
+        .property("get_sum_y2", &SplineOP_constrained::get_sum_y2)
+        .property("get_sum_yL1", &SplineOP_constrained::get_sum_yL1)
+        .property("get_sum_yL2", &SplineOP_constrained::get_sum_yL2)
+
+        .method("set_qc", &SplineOP_constrained::set_qc)
+        .method("get_segment_cost", &SplineOP_constrained::get_segment_cost) 
+        .method("predict", &SplineOP_constrained::predict, "Predicts changepoints with K changepoints.")
+    
+        .method("set_initSpeeds", &SplineOP_constrained::set_initSpeeds)
+        .method("set_states", &SplineOP_constrained::set_states);
+    
+
     // EXPOSE QUADRATIC COST CLASS TO R
 
     Rcpp::class_<QuadraticCost>("QuadraticCost")

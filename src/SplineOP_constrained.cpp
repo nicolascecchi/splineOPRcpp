@@ -109,20 +109,20 @@ void SplineOP_constrained::predict(int K)
     Eigen::VectorXd p_s;
     Eigen::VectorXd p_t;
     Eigen::VectorXd best_speed;
-    double interval_cost;
-    double candidate;
-    double current_MIN = std::numeric_limits<double>::infinity();
-    int best_i = -1;
-    int best_s = -1;
-    Eigen::Tensor<double, 1> tmp_speed_from_tensor(ndims);
+    double interval_cost; // Cost of a 
+    double candidate; // Cost of candidate value
+    double current_MIN = std::numeric_limits<double>::infinity(); // placeholder for lowest cost so far
+    int best_i = -1;  // Best previous state index 
+    int best_s = -1;  // Best previous time index
+    Eigen::Tensor<double, 1> tmp_speed_from_tensor(ndims); // placeholder to get current speeds
 
     // reinitialize changepoints and costs for new fit (small overhead for first time)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
     costs.setConstant(std::numeric_limits<double>::infinity());
-  
-    // Loop over data
-    for (int k=0;k<K+1;k++)
-    {
+    costs.chip(0,0).setConstant(0.0);
+    
+    for (int k=1;k<K+2;k++) // goes up to K+1 (segments) inclusive
+    {   // Loop over data with k segments
         for (size_t t = 1; t < nobs; t++)
         { // current last point
             for (size_t j = 0; j < nstates; j++)
@@ -160,9 +160,11 @@ void SplineOP_constrained::predict(int K)
                         else
                         {
                             // compute speed
-                            auto chip_k = speeds.chip(k-1, 0); 
-                            auto chip_state = chip_k.chip(j, 0);
-                            auto chip_time = chip_state.chip(s,0);
+                            // sequential chipping. Recall that each cheap removes 1 dimension,
+                            // thats why we always chip at dimension 0
+                            auto chip_k = speeds.chip(k-1, 0); // get speeds from previous iteration
+                            auto chip_state = chip_k.chip(j, 0); // take the ending state slice
+                            auto chip_time = chip_state.chip(s,0); // at time s
                             tmp_speed_from_tensor = chip_time.eval();
                             v_s = Eigen::Map<Eigen::VectorXd>(tmp_speed_from_tensor.data(), tmp_speed_from_tensor.size());
                             v_t = 2*(p_t - p_s)/(t - s) - v_s; 
@@ -170,7 +172,7 @@ void SplineOP_constrained::predict(int K)
                             // THIS INTERVAL COST IS BREAKING THE CODE 
                             interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                             // Candidate cost (DP recurrence)
-                            candidate = costs(i, s) + interval_cost;         
+                            candidate = costs(k-1, i, s) + interval_cost;         
                             if (candidate < current_MIN)
                             {
                                 current_MIN = candidate;
@@ -182,16 +184,16 @@ void SplineOP_constrained::predict(int K)
                     }
                 }
                 // Update tables with best results.
-                costs(j, t) = current_MIN;
+                costs(k, j, t) = current_MIN;
                 auto chip_k = speeds.chip(k, 0); 
                 auto chip_state = chip_k.chip(j, 0);
                 auto chip_time = chip_state.chip(t,0);
                 chip_time = best_speed.eval().template cast<double>();
-                argmin_i(j, t) = best_i;
-                argmin_s(j, t) = best_s;
+                argmin_i(k, j, t) = best_i;
+                argmin_s(k, j, t) = best_s;
             }   
-        }
-        
+        }     
+    }
     SplineOP_constrained::backtrack_changes();
 }
 
@@ -200,26 +202,24 @@ void SplineOP_constrained::backtrack_changes()
     // Find best final state
     double min_final = std::numeric_limits<double>::infinity();
     int best_final_state = -1;
+    int curr_K = K+1;
     for (size_t j = 0; j < nstates; j++)
     {
-        if (costs(j, nobs - 1) < min_final)
+        if (costs(curr_K, j, nobs - 1) < min_final)
         {
-        min_final = costs(j, nobs - 1);
+        min_final = costs(curr_K, j, nobs - 1);
         best_final_state = j;
         }
     }
 
     int j = best_final_state;
     int t = nobs - 1;
-
+    changepoints.push_back(t); // last point as a changepoint
     // Backtrack using argmin_s and argmin_i
-    while (true)
+    for (curr_K=K+1; curr_K>0; curr_K--)
     {
-    int s_prev = argmin_s(j, t);
-    int i_prev = argmin_i(j, t);
-
-    if (s_prev < 0)
-        break;  // reached the beginning or invalid index
+    int s_prev = argmin_s(curr_K, j, t);
+    int i_prev = argmin_i(curr_K, j, t);
 
     changepoints.push_back(s_prev);  // record change boundary
 
@@ -242,11 +242,11 @@ void SplineOP_constrained::set_qc(Eigen::MatrixXd& data){
     qc = QuadraticCost(data);  // Initialize the cost function with the provided data
 }
 
-void SplineOP::set_states(std::vector<Eigen::MatrixXd> new_states){
+void SplineOP_constrained::set_states(std::vector<Eigen::MatrixXd> new_states){
     states = new_states;
     nstates = new_states[0].cols(); // assume that all time have the same nb of states
 }
-void SplineOP::set_initSpeeds(Eigen::MatrixXd new_initSpeeds){
+void SplineOP_constrained::set_initSpeeds(Eigen::MatrixXd new_initSpeeds){
     initSpeeds = new_initSpeeds;
     nspeeds = new_initSpeeds.cols();
 }
