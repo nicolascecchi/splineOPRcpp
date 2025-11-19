@@ -17,13 +17,13 @@ SplineOP_constrained::SplineOP_constrained(Eigen::MatrixXd data
     ,K{K}
     ,sp{sp}
     ,nstates{nstates}   
-    ,nspeeds{nspeeds}
-    ,speeds(K, nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
+    ,nspeeds{sp.size()}
+    ,speeds(K, nobs, ndims, nstates) // initialize with dim nobs, its elements are Eigen::MatrixXd
     ,costs{K, nstates, data.cols()}//, std::numeric_limits<double>::infinity())
     ,initSpeeds{data.rows(),nspeeds}
     ,states() // default initialization, overwritten in the body of the constructor
-    ,argmin_i{nstates, data.cols()}
-    ,argmin_s{nstates, data.cols()}  
+    ,argmin_i{K, nstates, data.cols()}
+    ,argmin_s{K, nstates, data.cols()}  
     ,qc{data}
     ,changepoints(1,static_cast<int>(data.cols())) //??? place holder, will be superseeded afterwards
     {
@@ -185,10 +185,12 @@ void SplineOP_constrained::predict(int K)
                 }
                 // Update tables with best results.
                 costs(k, j, t) = current_MIN;
-                auto chip_k = speeds.chip(k, 0); 
-                auto chip_state = chip_k.chip(j, 0);
-                auto chip_time = chip_state.chip(t,0);
-                chip_time = best_speed.eval().template cast<double>();
+                //update speeds
+                auto speeds_chip_k = speeds.chip(k, 0); 
+                auto speeds_chip_state = speeds_chip_k.chip(j, 0);
+                auto speeds_chip_time = speeds_chip_state.chip(t,0);
+                speeds_chip_time = Eigen::TensorMap<Eigen::Tensor<const double, 1>>(best_speed.data(), ndims);
+                // update best params
                 argmin_i(k, j, t) = best_i;
                 argmin_s(k, j, t) = best_s;
             }   
@@ -214,21 +216,24 @@ void SplineOP_constrained::backtrack_changes()
 
     int j = best_final_state;
     int t = nobs - 1;
-    changepoints.push_back(t); // last point as a changepoint
+    // changepoints.push_back(t); // last point as a changepoint
     // Backtrack using argmin_s and argmin_i
     for (curr_K=K+1; curr_K>0; curr_K--)
     {
-    int s_prev = argmin_s(curr_K, j, t);
-    int i_prev = argmin_i(curr_K, j, t);
+        std::cout << "Current K: " << curr_K << std::endl;
+        std::cout << "Current best s: " << t << " current best j: " << j << std::endl;
+        int s_prev = argmin_s(curr_K, j, t);
+        int i_prev = argmin_i(curr_K, j, t);
 
-    changepoints.push_back(s_prev);  // record change boundary
+        changepoints.push_back(s_prev);  // record change boundary
 
-    t = s_prev;
-    j = i_prev;
+        t = s_prev;
+        j = i_prev;
     }
     // Reverse the order to chronological (0 → nobs)
     std::reverse(changepoints.begin(), changepoints.end());
-    for (size_t cpt = 0; cpt<changepoints.size(); cpt++){
+    for (size_t cpt = 0; cpt<changepoints.size(); cpt++)
+    {
         changepoints[cpt] += 1;
     }
 }
