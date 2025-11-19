@@ -237,10 +237,6 @@ void SplineOP::pruningv1(double beta, double margin)
                                 best_i = i;
                                 best_s = s;
                             }
-                            if (candidate < pruning_costs(i,s))
-                            {
-                            pruning_costs(i,s) = candidate;
-                            }
                         }                        
                     } // end of cost without changepoint before
                     else
@@ -259,10 +255,6 @@ void SplineOP::pruningv1(double beta, double margin)
                             best_speed = v_t;
                             best_i = i;
                             best_s = s;
-                        }
-                        if ((candidate-beta) < pruning_costs(i,s))
-                        {
-                            pruning_costs(i,s) = candidate;
                         }
                     } // end of cost with at least 1 changepoint before
                 } // end of times for a given position index
@@ -419,14 +411,14 @@ void SplineOP::prunev1(size_t t, double margin)
                 else
                 {
                     // Evaluate all ending states
+                    p_s = states[s].col(i).eval();
+                    v_s = speeds[s].col(i).eval();
                     for(size_t j = 0; j<nstates; j++)
-                    {
-                        p_s = states[s].col(i).eval();
+                    {    
                         p_t = states[t].col(j).eval();
-                        v_s = speeds[s].col(i).eval();
                         interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                         candidate = costs(i, s) + interval_cost;         
-                        if (candidate > costs(j,t)+margin)
+                        if (candidate > costs(j,t) * (1 + margin))
                         {counter++;}
                     }
                     
