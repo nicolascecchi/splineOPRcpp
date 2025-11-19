@@ -115,13 +115,19 @@ void SplineOP_constrained::predict(int K)
     int best_i = -1;  // Best previous state index 
     int best_s = -1;  // Best previous time index
     Eigen::Tensor<double, 1> tmp_speed_from_tensor(ndims); // placeholder to get current speeds
-
+    K = K;
+    // VOIR ICI .. VER ACA LA REINICIALIZACION
+    // EN TOUT CAS, CA NE MARCHE PAS LE PREMIER TOUR NON PLUS
+    speeds(K, nobs, ndims, nstates);
+    costs{K, nstates, ndims};
+    argmin_i{K, nstates, ndims};
+    argmin_s{K, nstates, ndims};
     // reinitialize changepoints and costs for new fit (small overhead for first time)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
     costs.setConstant(std::numeric_limits<double>::infinity());
     costs.chip(0,0).setConstant(0.0);
     
-    for (int k=1;k<K+2;k++) // goes up to K+1 (segments) inclusive
+    for (int k=1; k<K+2; k++) // goes up to K+1 (segments) inclusive
     {   // Loop over data with k segments
         for (size_t t = 1; t < nobs; t++)
         { // current last point
@@ -218,7 +224,7 @@ void SplineOP_constrained::backtrack_changes()
     int t = nobs - 1;
     // changepoints.push_back(t); // last point as a changepoint
     // Backtrack using argmin_s and argmin_i
-    for (curr_K=K+1; curr_K>0; curr_K--)
+    for (curr_K=K+1; curr_K>1; curr_K--)
     {
         std::cout << "Current K: " << curr_K << std::endl;
         std::cout << "Current best s: " << t << " current best j: " << j << std::endl;
