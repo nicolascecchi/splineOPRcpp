@@ -418,7 +418,7 @@ void SplineOP::prunev1(size_t t, double margin)
                         p_t = states[t].col(j).eval();
                         interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                         candidate = costs(i, s) + interval_cost;         
-                        if (candidate > costs(j,t) + margin)
+                        if (candidate > costs(j,t) * (1 + margin))
                         {counter++;}
                     }
                     
