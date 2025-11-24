@@ -12,11 +12,11 @@ library(splineOP) # Our package
 # 1. Define Options
 option_list = list(
   make_option(c("--N_SAMPLES"), type="integer", default=1000, help="Number of samples"),
-  make_option(c("--K"), type="integer", default=5, help="K value"),
+  make_option(c("--N_SEG"), type="integer", default=5, help="K value"),
   make_option(c("--snr"), type="double", default=30, help="Signal to Noise Ratio"),
   make_option(c("--sample"), type="integer", default=6, help="Sample ID"),
   make_option(c("--nstates"), type="integer", default=5, help="Number of states"),
-  make_option(c("--KMAX"), type="integer", default=25, help="Max K"),
+  make_option(c("--N_CHANGEPOINTS_PRED"), type="integer", default=25, help="Max K"),
   make_option(c("--OUT_FOLDER"), type="character", default="output", help="Output directory")
 )
 
@@ -36,26 +36,25 @@ main <- function(args) {
 
   #CURR_FOLDER = getwd()
   EXPERIENCE_FOLDER = dirname(CURR_FOLDER) # eg. 1-benchmarking
-  SAVE_FOLDER = paste0(EXPERIENCE_FOLDER, "/results/splineop/")
+  SAVE_FOLDER = paste0(EXPERIENCE_FOLDER, "/results/splineop/", args$OUT_FOLDER)
   if (!dir.exists(SAVE_FOLDER)) {
     dir.create(SAVE_FOLDER, recursive = TRUE)
   }
   # setup variables for file name
-  Kfill = sprintf("%0*d", 2, args$K)
+  Kfill = sprintf("%0*d", 2, args$N_SEG)
   samplefill = sprintf("%0*d", 2, args$sample)
   Nfill = sprintf("%0*d", 4, args$N_SAMPLES)
 
   # To load data
   DATA_FOLDER = paste0(dirname(EXPERIENCE_FOLDER),"/data/synth")
-  #clean_signal = read.csv(paste0(DATA_FOLDER,"/raw/","K",args$K,"/K",Kfill,"id", samplefill,"N",Nfill, ".csv"),header=FALSE)
-  noised_signal =  read.csv(paste0(DATA_FOLDER,"/K",args$K,"/noised/","K",Kfill,"id", samplefill,"N",Nfill,"SNR",args$snr, ".csv"),header=FALSE)
+  #clean_signal = read.csv(paste0(DATA_FOLDER,"/raw/","K",args$N_SEG,"/K",Kfill,"id", samplefill,"N",Nfill, ".csv"),header=FALSE)
+  noised_signal =  read.csv(paste0(DATA_FOLDER,"/K",args$N_SEG,"/noised/","K",Kfill,"id", samplefill,"N",Nfill,"SNR",args$snr, ".csv"),header=FALSE)
   # Set up parameters for creating SplineOP object
   noised_signal = as.matrix(sapply(noised_signal,as.numeric))
   noised_signal = t(noised_signal) # transpose to have the required format
   estimated_std_dev = sdHallDiff2(noised_signal)
   len_speed_estimators = as.integer(c(20, 40, 60, 80, 100))
-  n_changepoints_pred = as.integer(args$K-1)
-  print(n_changepoints_pred)
+  n_changepoints_pred = as.integer(args$N_CHANGEPOINTS_PRED)
   states_seed = as.integer(args$sample)
   nb_of_states = as.integer(args$nstates)
 
@@ -68,17 +67,31 @@ main <- function(args) {
               ,n_changepoints_pred # nb of changepoints, one less than segments
               ,states_seed # for state generation
               )
-  spop$predict(n_changepoints_pred)
-  FILE_NAME = paste0("changepoint_N",Nfill,"-K",Kfill,"-SNR",args$snr,"-ID",samplefill,".json")
-  SAVE_PATH = paste0(SAVE_FOLDER, FILE_NAME)
-  OUT_FILE_PATH = paste0(SAVE_PATH, FILE_NAME)
+  
+  time_data <- system.time(spop$predict(n_changepoints_pred))
+  FILE_NAME = paste0("spop_constrained_predictions_N",Nfill,
+                     "-K",Kfill,
+                     "-SNR",args$snr,
+                     "-ID",samplefill,
+                     "-KPRED",args$N_CHANGEPOINTS_PRED,
+                     ".json")
+  #SAVE_PATH = paste0(SAVE_FOLDER, FILE_NAME)
+  OUT_FILE_PATH = paste0(SAVE_FOLDER, "/",FILE_NAME)
   
   results_list <- as.list(args)
   # Add the main result vector
   results_list$changepoints <- spop$get_changepoints 
-  print(spop$get_changepoints)
-  jsonlite::write_json(results_list, OUT_FILE_PATH, pretty = TRUE)
+  results_list$len_speed_estimators <- len_speed_estimators
+  results_list$estimated_std_dev <- estimated_std_dev
+  results_list$n_changepoints_pred <- n_changepoints_pred
+  results_list$states_seed <- states_seed
+  results_list$execution_time_seconds <- time_data["elapsed"]
+  results_list$cpu_user_time_seconds <- time_data["user.self"]
+  results_list$algorithm <- "splineop-constrained"
+  jsonlite::write_json(results_list, OUT_FILE_PATH, pretty = TRUE, unbox=TRUE)
 }
 
 # 4. Execute
 main(opt)
+# system("")
+#  Rscript simulations/paper/1-benchmarking/scripts/predict-cpt-splineop-constrained.R --N_SAMPLES 1000 --N_SEG 5 --snr 30 --sample 1 --nstates 5 --N_CHANGEPOINTS_PRED 5 --OUT_FOLDER '20251124'
