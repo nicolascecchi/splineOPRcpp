@@ -8,4 +8,4 @@ src/*.so
 src/*.dll
 .Rproj.user
 experiences/
-experiences/paper/**/*.csv
+simulations/paper/**/*.csv
