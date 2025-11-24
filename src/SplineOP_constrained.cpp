@@ -147,14 +147,8 @@ void SplineOP_constrained::predict(int K)
     costs.setConstant(std::numeric_limits<double>::infinity());
     costs.chip(0,0).setConstant(0.0);
 
-    std::cout << "speeds dims: " << speeds.dimensions() << std::endl;
-    std::cout << "costs dims: " << costs.dimensions() << std::endl;
-    std::cout << "argmin_i dims: " << argmin_i.dimensions() << std::endl;
-    std::cout << "argmin_s dims: " << argmin_s.dimensions() << std::endl;
-    
     for (int k=1; k<K+2; k++) // goes up to K+1 (segments) inclusive
     {   // Loop over data with k segments
-        std::cout << "Optimizing for " << k << " segments." << std::endl;
         for (size_t t = 1; t < nobs; t++)
         { // current last point
             for (size_t j = 0; j < nstates; j++)
@@ -249,8 +243,6 @@ void SplineOP_constrained::predict(int K)
 
 void SplineOP_constrained::backtrack_changes(int K)
 {
-    std::cout << "Backtrack changes with K " << K << std::endl;
-
     // Find best final state
     double min_final = std::numeric_limits<double>::infinity();
     int best_final_state = -1;
@@ -269,8 +261,6 @@ void SplineOP_constrained::backtrack_changes(int K)
     // Backtrack using argmin_s and argmin_i
     for (int curr_K=K+1; curr_K>1; curr_K--)
     {
-        std::cout << "Current K: " << curr_K << std::endl;
-        std::cout << "Current best s: " << t << " current best j: " << j << std::endl;
         int s_prev = argmin_s(curr_K, j, t);
         int i_prev = argmin_i(curr_K, j, t);
 
