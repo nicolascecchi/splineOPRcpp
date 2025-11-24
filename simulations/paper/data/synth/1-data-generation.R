@@ -1,6 +1,9 @@
 library(splineOP)
 
-SAVE_DIRECTORY = dirname(rstudioapi::getSourceEditorContext()$path)
+cmd_args <- commandArgs(trailingOnly = FALSE)
+needle <- "--file="
+match_arg <- grep(needle, cmd_args) # 1. Find the argument that contains the script file name
+SAVE_DIRECTORY = dirname(normalizePath(sub(needle, "", cmd_args[match_arg]))) # Extract the path from the --file= argument
 
 set.seed(12)
 N = 1000
