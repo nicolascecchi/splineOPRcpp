@@ -27,8 +27,15 @@ opt = parse_args(opt_parser)
 # 3. Define Main Function
 main <- function(args) {
   # Set up for saving the result
-  CURR_FOLDER = getwd()
-  EXPERIENCE_FOLDER = dirname(CURR_FOLDER)
+  cmd_args <- commandArgs(trailingOnly = FALSE)
+  needle <- "--file="
+  # 1. Find the argument that contains the script file name
+  match_arg <- grep(needle, cmd_args)
+  # Extract the path from the --file= argument
+  CURR_FOLDER = dirname(normalizePath(sub(needle, "", cmd_args[match_arg])))
+
+  #CURR_FOLDER = getwd()
+  EXPERIENCE_FOLDER = dirname(CURR_FOLDER) # eg. 1-benchmarking
   SAVE_FOLDER = paste0(EXPERIENCE_FOLDER, "/results/splineop/")
   if (!dir.exists(SAVE_FOLDER)) {
     dir.create(SAVE_FOLDER, recursive = TRUE)
@@ -38,7 +45,6 @@ main <- function(args) {
   samplefill = sprintf("%0*d", 2, args$sample)
   Nfill = sprintf("%0*d", 4, args$N_SAMPLES)
 
-  cat(sprintf("Running: N=%d, K=%d, SNR=%.1f\n", args$N_SAMPLES, args$K, args$snr))
   # To load data
   DATA_FOLDER = paste0(dirname(EXPERIENCE_FOLDER),"/data/synth")
   #clean_signal = read.csv(paste0(DATA_FOLDER,"/raw/","K",args$K,"/K",Kfill,"id", samplefill,"N",Nfill, ".csv"),header=FALSE)
@@ -47,7 +53,7 @@ main <- function(args) {
   # Set up parameters for creating SplineOP object
   noised_signal = t(noised_signal) # transpose to have the required format
   estimated_std_dev = sdHallDiff2(noised_signal)
-  len_speed_estimators =as.numeric(c(20, 40, 60, 80, 100))
+  len_speed_estimators = as.numeric(c(20, 40, 60, 80, 100))
   n_changepoints_pred = args$K-1
   states_seed = args$sample
 
@@ -62,10 +68,11 @@ main <- function(args) {
   FILE_NAME = paste0("changepoint_N",Nfill,"-K",Kfill,"-SNR",args$snr,"-ID",samplefill,".csv")
   SAVE_PATH = paste0(SAVE_FOLDER/FILENAME)
   OUT_FILE_PATH = paste0(SAVE_PATH, FILE_NAME)
-  write.table(spop$get_changepoints,
-              OUT_FILE_PATH,
-              row.names = FALSE,
-              col.names = FALSE)
+  
+  results_list <- as.list(args)
+  # Add the main result vector
+  results_list$changepoints <- spop$get_changepoints 
+  jsonlite::write_json(results_list, JSON_SAVE_PATH, pretty = TRUE)
 }
 
 # 4. Execute
