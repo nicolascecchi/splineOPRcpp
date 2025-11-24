@@ -41,7 +41,7 @@ sdHallDiff2 <- function(data)
     sd_cum = 0.0
     for (dim in 1:NDIM)
     {
-      sd_cum = sd_cum + sdHallDiff2(data[dim,])
+      sd_cum = sd_cum + sdHallDiff2(t(as.matrix(data[dim,])))
     }
     sd_mean = sd_cum/NDIM
     return(sd_mean)
