@@ -48,30 +48,35 @@ main <- function(args) {
   # To load data
   DATA_FOLDER = paste0(dirname(EXPERIENCE_FOLDER),"/data/synth")
   #clean_signal = read.csv(paste0(DATA_FOLDER,"/raw/","K",args$K,"/K",Kfill,"id", samplefill,"N",Nfill, ".csv"),header=FALSE)
-  noised_signal =  read.csv(paste0(DATA_FOLDER,"/raw/","K",args$K,"/K",Kfill,"id", samplefill,"N",Nfill,"SNR",args$snr, ".csv"),header=FALSE)
-
+  noised_signal =  read.csv(paste0(DATA_FOLDER,"/K",args$K,"/noised/","K",Kfill,"id", samplefill,"N",Nfill,"SNR",args$snr, ".csv"),header=FALSE)
   # Set up parameters for creating SplineOP object
+  noised_signal = as.matrix(sapply(noised_signal,as.numeric))
   noised_signal = t(noised_signal) # transpose to have the required format
   estimated_std_dev = sdHallDiff2(noised_signal)
-  len_speed_estimators = as.numeric(c(20, 40, 60, 80, 100))
-  n_changepoints_pred = args$K-1
-  states_seed = args$sample
+  len_speed_estimators = as.integer(c(20, 40, 60, 80, 100))
+  n_changepoints_pred = as.integer(args$K-1)
+  print(n_changepoints_pred)
+  states_seed = as.integer(args$sample)
+  nb_of_states = as.integer(args$nstates)
 
   # Predict pipeline
   spop <- new(SplineOP_constrained
               ,noised_signal # Data to fit
+              ,nb_of_states
               ,len_speed_estimators # Vector fo speeds estimation
               ,estimated_std_dev # For state generation
               ,n_changepoints_pred # nb of changepoints, one less than segments
               ,states_seed # for state generation
               )
+  spop$predict(n_changepoints_pred)
   FILE_NAME = paste0("changepoint_N",Nfill,"-K",Kfill,"-SNR",args$snr,"-ID",samplefill,".json")
-  SAVE_PATH = paste0(SAVE_FOLDER/FILE_NAME)
+  SAVE_PATH = paste0(SAVE_FOLDER, FILE_NAME)
   OUT_FILE_PATH = paste0(SAVE_PATH, FILE_NAME)
   
   results_list <- as.list(args)
   # Add the main result vector
   results_list$changepoints <- spop$get_changepoints 
+  print(spop$get_changepoints)
   jsonlite::write_json(results_list, OUT_FILE_PATH, pretty = TRUE)
 }
 
