@@ -91,7 +91,6 @@ class SplineOP
         //constructor
     explicit SplineOP(Eigen::MatrixXd data
                       ,size_t nstates
-                      ,size_t nspeeds
                       ,std::vector<int> sp
                       ,double data_var
                       ,int seed);

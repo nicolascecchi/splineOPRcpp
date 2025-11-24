@@ -8,7 +8,6 @@
 // Define the construction
 SplineOP::SplineOP(Eigen::MatrixXd data
                 ,size_t nstates
-                ,size_t nspeeds
                 ,std::vector<int> sp
                 ,double data_var
                 ,int seed):
@@ -16,7 +15,7 @@ SplineOP::SplineOP(Eigen::MatrixXd data
     ,ndims{static_cast<size_t>(data.rows())}
     ,sp{sp}
     ,nstates{nstates}   
-    ,nspeeds{nspeeds}
+    ,nspeeds{sp.size()}
     ,speeds(nobs, Eigen::MatrixXd::Zero(data.rows(), nstates)) // initialize with dim nobs, its elements are Eigen::MatrixXd
     ,costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
     ,pruning_costs{nstates, data.cols()}//, std::numeric_limits<double>::infinity())
