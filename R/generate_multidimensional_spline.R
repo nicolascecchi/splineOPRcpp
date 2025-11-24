@@ -1,6 +1,5 @@
 #' Generate a Multidimensional Quadratic Spline Signal with Additive Noise
 #'
-#' @param result
 #' @param ndims Number of dimensions.
 #' @param n_points Signal length.
 #' @param snr Signal to noise ratio.
