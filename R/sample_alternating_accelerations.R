@@ -19,10 +19,20 @@
 #' v1 <- sample_and_flip(seed = 42, K = 8)
 #' v2 <- sample_and_flip(seed = 42, K = 8)
 #' all.equal(v1, v2) # Should be TRUE
-sample_alternating_accelerations <- function(seed, K) {
-  set.seed(seed)
-  sampled_values <- sample(1:20, size = K, replace = TRUE)
-  sign_pattern <- rep(c(1, -1), length.out = K)
-  final_vector <- sampled_values * sign_pattern
-  return(final_vector)
+sample_alternating_accelerations <- function(K, seed=NULL) {
+  if (is.null(seed))
+  {
+    sampled_values <- sample(1:20, size = K, replace = TRUE)
+    sign_pattern <- rep(c(1, -1), length.out = K)
+    final_vector <- sampled_values * sign_pattern
+    return(final_vector)
+  }
+  else
+  {
+    set.seed(seed)
+    sampled_values <- sample(1:20, size = K, replace = TRUE)
+    sign_pattern <- rep(c(1, -1), length.out = K)
+    final_vector <- sampled_values * sign_pattern
+    return(final_vector)
+  }
 }
