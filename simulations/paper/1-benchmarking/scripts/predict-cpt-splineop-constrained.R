@@ -65,14 +65,14 @@ main <- function(args) {
               ,n_changepoints_pred # nb of changepoints, one less than segments
               ,states_seed # for state generation
               )
-  FILE_NAME = paste0("changepoint_N",Nfill,"-K",Kfill,"-SNR",args$snr,"-ID",samplefill,".csv")
-  SAVE_PATH = paste0(SAVE_FOLDER/FILENAME)
+  FILE_NAME = paste0("changepoint_N",Nfill,"-K",Kfill,"-SNR",args$snr,"-ID",samplefill,".json")
+  SAVE_PATH = paste0(SAVE_FOLDER/FILE_NAME)
   OUT_FILE_PATH = paste0(SAVE_PATH, FILE_NAME)
   
   results_list <- as.list(args)
   # Add the main result vector
   results_list$changepoints <- spop$get_changepoints 
-  jsonlite::write_json(results_list, JSON_SAVE_PATH, pretty = TRUE)
+  jsonlite::write_json(results_list, OUT_FILE_PATH, pretty = TRUE)
 }
 
 # 4. Execute
