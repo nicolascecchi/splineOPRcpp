@@ -5,7 +5,8 @@
 #' (column) independently using the same basis.
 #'
 #' @param data A numeric matrix of shape [N_OBS, N_DIMS].
-#' @param knots A numeric vector of internal knots in range [1,NOBS].
+#' @param knots A numeric vector of internal knots in range [1,NOBS],
+#' not including endpoints.
 #' @return A numeric matrix of shape [N_OBS, N_DIMS] containing the
 #'   fitted values (the smoothed spline curves).
 #' @importFrom splines bs
