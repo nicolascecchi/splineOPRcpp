@@ -1,5 +1,5 @@
-#include <RcppEigen.h>
 
+#include <Eigen/Dense>
 #include "SplineOP_constrained.h"
 #include "SpeedEstimator.h"
 // Continue with initSpeeds that has a problem with the shape and type

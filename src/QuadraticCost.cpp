@@ -1,7 +1,8 @@
 #include <cmath> // Required for std::pow
 #include <cassert>
-#include <Rcpp.h>
-#include <RcppEigen.h>
+#include <Eigen/Dense>
+//#include <Rcpp.h>
+//#include <RcppEigen.h>
 
 #include "Faulhaber.h"
 #include "QuadraticCost.h"

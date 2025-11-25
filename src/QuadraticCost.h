@@ -2,7 +2,8 @@
 #define QUADRATIC_COST_H
 
 #include <vector>
-#include <RcppEigen.h>
+#include <Eigen/Dense>
+//#include <RcppEigen.h>
 
 // Class for fast O(1) evaluation of quadratic spline cost on equispaced intervals
 class QuadraticCost

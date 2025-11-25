@@ -1,5 +1,6 @@
-#include <Rcpp.h>
-#include <RcppEigen.h> 
+//#include <Rcpp.h>
+//#include <RcppEigen.h> 
+#include <Eigen/Dense>
 #include <vector>
 #include <stdexcept>
 

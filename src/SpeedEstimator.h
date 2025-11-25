@@ -3,7 +3,9 @@
 #define SPEED_ESTIMATOR_H
 
 #include <vector>
-#include <RcppEigen.h>
+#include <Eigen/Dense>
+
+//#include <RcppEigen.h>
 
 // Declaration of the function to be called by other C++ files
 double get_approx_speed_1d(const Eigen::VectorXd& data_row, size_t N);
