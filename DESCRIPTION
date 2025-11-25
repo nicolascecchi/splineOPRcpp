@@ -12,7 +12,7 @@ Description: This package computes a quadratic piecewise approximation (quadrati
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 1.0.10), RcppEigen
+Imports: Rcpp (>= 1.0.10), RcppEigen, CVXR, Matrix, signal
 Suggests: 
     devtools,
     testthat (>= 3.0.0),
