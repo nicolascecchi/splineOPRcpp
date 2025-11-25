@@ -41,22 +41,21 @@ main <- function(args) {
     dir.create(SAVE_FOLDER, recursive = TRUE)
   }
   # setup variables for file name
-  Kfill = sprintf("%0*d", 2, args$N_SEG)
-  samplefill = sprintf("%0*d", 2, args$sample)
-  Nfill = sprintf("%0*d", 4, args$N_SAMPLES)
+  Kfill <- sprintf("%0*d", 2, args$N_SEG)
+  samplefill <- sprintf("%0*d", 2, args$sample)
+  Nfill <- sprintf("%0*d", 4, args$N_SAMPLES)
 
   # To load data
-  DATA_FOLDER = paste0(dirname(EXPERIENCE_FOLDER),"/data/synth")
-  #clean_signal = read.csv(paste0(DATA_FOLDER,"/raw/","K",args$N_SEG,"/K",Kfill,"id", samplefill,"N",Nfill, ".csv"),header=FALSE)
-  noised_signal =  read.csv(paste0(DATA_FOLDER,"/K",args$N_SEG,"/noised/","K",Kfill,"id", samplefill,"N",Nfill,"SNR",args$snr, ".csv"),header=FALSE)
+  DATA_FOLDER <- paste0(dirname(EXPERIENCE_FOLDER),"/data/synth")
+  noised_signal <-  read.csv(paste0(DATA_FOLDER,"/K",args$N_SEG,"/noised/","K",Kfill,"id", samplefill,"N",Nfill,"SNR",args$snr, ".csv"),header=FALSE)
   # Set up parameters for creating SplineOP object
-  noised_signal = as.matrix(sapply(noised_signal,as.numeric))
-  noised_signal = t(noised_signal) # transpose to have the required format
-  estimated_std_dev = sdHallDiff2(noised_signal)
-  len_speed_estimators = as.integer(c(20, 40, 60, 80, 100))
-  n_changepoints_pred = as.integer(args$N_CHANGEPOINTS_PRED)
-  states_seed = as.integer(args$sample)
-  nb_of_states = as.integer(args$nstates)
+  noised_signal <- as.matrix(sapply(noised_signal,as.numeric))
+  noised_signal <- t(noised_signal) # transpose to have the required format for spop
+  estimated_std_dev <- sdHallDiff2(noised_signal)
+  len_speed_estimators <- as.integer(c(20, 40, 60, 80, 100))
+  n_changepoints_pred <- as.integer(args$N_CHANGEPOINTS_PRED)
+  states_seed <- as.integer(args$sample)
+  nb_of_states <- as.integer(args$nstates)
 
   # Predict pipeline
   spop <- new(SplineOP_constrained
@@ -69,6 +68,33 @@ main <- function(args) {
               )
   
   time_data <- system.time(spop$predict(n_changepoints_pred))
+
+  # METRICS
+
+  # Changepoint retrieval metrics 
+  real_changepoints <- read.csv(paste0(DATA_FOLDER,"/K",args$N_SEG,"/raw/","/bkps_K",Kfill,"id", samplefill,"N",Nfill, ".csv"),header=FALSE)
+  real_changepoints <- unlist(real_changepoints$V1 * args$N_SAMPLES)
+  real_changepoints <- c(1, real_changepoints)
+  pred_changepoints <- spop$get_changepoints
+  pred_changepoints <- c(1, pred_changepoints)
+  
+  precrecall1pct <- precision_recall(real_changepoints, pred_changepoints, margin=0.01*args$N_SAMPLES)
+  precrecall2pct <- precision_recall(real_changepoints, pred_changepoints, margin=0.02*args$N_SAMPLES)
+  precrecall25pct <- precision_recall(real_changepoints, pred_changepoints, margin=0.025*args$N_SAMPLES)
+  precrecall5pct <- precision_recall(real_changepoints, pred_changepoints, margin=0.05*args$N_SAMPLES)
+
+  fscore1pct <- f_score(precrecall1pct['precision'], precrecall1pct['recall'])
+  fscore2pct <- f_score(precrecall2pct['precision'], precrecall2pct['recall'])
+  fscore25pct <- f_score(precrecall25pct['precision'], precrecall25pct['recall'])
+  fscore5pct <- f_score(precrecall5pct['precision'], precrecall5pct['recall'])
+
+  # Signal reconstruction (MSE)
+  clean_signal <- read.csv(paste0(DATA_FOLDER,"/K",args$N_SEG,"/raw/","/K",Kfill,"id", samplefill,"N",Nfill, ".csv"),header=FALSE)
+  clean_signal <- as.matrix(clean_signal)
+  # "untranspose" the noised_signal to long format
+  predicted_signal <- predict_quadratic_spline(t(noised_signal), pred_changepoints[-c(1, length(pred_changepoints))])
+  mse <- mse(clean_signal, predicted_signal)
+  # Save the results 
   FILE_NAME = paste0("spop_constrained_predictions_N",Nfill,
                      "-K",Kfill,
                      "-SNR",args$snr,
@@ -80,13 +106,27 @@ main <- function(args) {
   
   results_list <- as.list(args)
   # Add the main result vector
-  results_list$changepoints <- spop$get_changepoints 
+  results_list$changepoints <- pred_changepoints
+  results_list$real_changepoints <- real_changepoints
   results_list$len_speed_estimators <- len_speed_estimators
   results_list$estimated_std_dev <- estimated_std_dev
   results_list$n_changepoints_pred <- n_changepoints_pred
   results_list$states_seed <- states_seed
   results_list$execution_time_seconds <- time_data["elapsed"]
   results_list$cpu_user_time_seconds <- time_data["user.self"]
+  results_list$precision01 <- precrecall1pct["precision"]
+  results_list$precision02 <- precrecall2pct["precision"]
+  results_list$precision025 <- precrecall25pct["precision"]
+  results_list$precision05 <- precrecall5pct["precision"]
+  results_list$recall01 <- precrecall1pct["recall"]
+  results_list$recall02 <- precrecall2pct["recall"]
+  results_list$recall025 <- precrecall25pct["recall"]
+  results_list$recall05 <- precrecall5pct["recall"]
+  results_list$fscore1pct <- fscore1pct
+  results_list$fscore2pct <- fscore2pct
+  results_list$fscore25pct <- fscore25pct
+  results_list$fscore5pct <- fscore5pct
+  results_list$mse <- mse
   results_list$algorithm <- "splineop-constrained"
   jsonlite::write_json(results_list, OUT_FILE_PATH, pretty = TRUE, unbox=TRUE)
 }
