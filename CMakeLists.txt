@@ -10,7 +10,7 @@ find_package(Eigen3 REQUIRED 3.3) # Require version 3.3 or higher
 # Define your compiled extension module. 
 # The first argument must be the same name as your project's top-level Python package (splineOPRcpp).
 # The path must be relative to the CMakeLists.txt.
-pybind11_add_module(splineop 
+pybind11_add_module(splineop_cpp 
     src/py_bindings.cpp
     src/Faulhaber.cpp
     src/QuadraticCost.cpp
@@ -22,10 +22,10 @@ pybind11_add_module(splineop
 # This is the CRITICAL step: it tells CMake to install the compiled file 
 # into the Python site-packages directory.
 # DESTINATION . ensures it lands in the package root.
-install(TARGETS splineop 
+install(TARGETS splineop_cpp 
     LIBRARY DESTINATION .
 )
-target_link_libraries(splineop 
+target_link_libraries(splineop_cpp 
     PRIVATE
         Eigen3::Eigen
 )

@@ -13,7 +13,7 @@ namespace py = pybind11;
 
 // Define the Python module named 'splineop_py'
 // The macro takes the module name and a variable 'm' for the module object
-PYBIND11_MODULE(splineop, m) {
+PYBIND11_MODULE(splineop_cpp, m) {
     m.doc() = "Python bindings for SplineOP, a change point detection library using optimal partitioning.";
 
     // =================================================================

@@ -3,7 +3,7 @@ requires = ["scikit-build-core>=0.5", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "splineop"
+name = "splineop_cpp"
 version = "0.1.0" # Change this as you develop
 description = "Find changes in accelerations with quadratic splines.."
 readme = "README.md"
