@@ -5,8 +5,15 @@ project(${SKBUILD_PROJECT_NAME} LANGUAGES CXX)
 
 # Find pybind11, which scikit-build-core ensures is installed
 find_package(pybind11 CONFIG REQUIRED)
-find_package(Eigen3 REQUIRED 3.3) # Require version 3.3 or higher
+include(FetchContent)
 
+# 2. Declare the dependency details (name, source, and version tag)
+FetchContent_Declare(
+    Eigen
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 3.4.0 # Specifies the exact version to download
+    OVERRIDE_FIND_PACKAGE
+)
 # Define your compiled extension module. 
 # The first argument must be the same name as your project's top-level Python package (splineOPRcpp).
 # The path must be relative to the CMakeLists.txt.
@@ -25,6 +32,7 @@ pybind11_add_module(splineop_cpp
 install(TARGETS splineop_cpp 
     LIBRARY DESTINATION .
 )
+FetchContent_MakeAvailable(Eigen)
 target_link_libraries(splineop_cpp 
     PRIVATE
         Eigen3::Eigen
