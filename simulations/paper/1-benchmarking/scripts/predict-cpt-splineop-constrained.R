@@ -26,6 +26,7 @@ opt = parse_args(opt_parser)
 
 # 3. Define Main Function
 main <- function(args) {
+  algorithm <- "splineop-constrained"
   # Set up for saving the result
   cmd_args <- commandArgs(trailingOnly = FALSE)
   needle <- "--file="
@@ -36,7 +37,7 @@ main <- function(args) {
 
   #CURR_FOLDER = getwd()
   EXPERIENCE_FOLDER = dirname(CURR_FOLDER) # eg. 1-benchmarking
-  SAVE_FOLDER = paste0(EXPERIENCE_FOLDER, "/results/splineop/", args$OUT_FOLDER)
+  SAVE_FOLDER = paste0(EXPERIENCE_FOLDER, "/results/",algorithm,"/", args$OUT_FOLDER)
   if (!dir.exists(SAVE_FOLDER)) {
     dir.create(SAVE_FOLDER, recursive = TRUE)
   }
@@ -102,7 +103,7 @@ main <- function(args) {
                      "-KPRED",args$N_CHANGEPOINTS_PRED,
                      ".json")
   #SAVE_PATH = paste0(SAVE_FOLDER, FILE_NAME)
-  OUT_FILE_PATH = paste0(SAVE_FOLDER, "/",FILE_NAME)
+  OUT_FILE_PATH <- paste0(SAVE_FOLDER, "/", FILE_NAME)
   
   results_list <- as.list(args)
   # Add the main result vector
@@ -127,7 +128,7 @@ main <- function(args) {
   results_list$fscore25pct <- fscore25pct
   results_list$fscore5pct <- fscore5pct
   results_list$mse <- mse
-  results_list$algorithm <- "splineop-constrained"
+  results_list$algorithm <- algorithm
   jsonlite::write_json(results_list, OUT_FILE_PATH, pretty = TRUE, unbox=TRUE)
 }
 
