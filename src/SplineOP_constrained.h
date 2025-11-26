@@ -47,7 +47,7 @@ class SplineOP_constrained
                                             double std_dev, 
                                             size_t rows, 
                                             size_t cols);
-        void backtrack_changes(int K);
+        
         void compute_best_with_change(int K, size_t t, size_t j);
         void compute_best_without_change( Eigen::VectorXd& p_t, double& current_MIN,Eigen::VectorXd& best_out_speed,int& best_i,int& best_s, int& t);
 
@@ -57,7 +57,7 @@ class SplineOP_constrained
     public:
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(int K); // predicts with a given penalty
-
+        void backtrack_changes(int K);
         //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
         std::vector<Eigen::MatrixXd> get_states() const {return states;}

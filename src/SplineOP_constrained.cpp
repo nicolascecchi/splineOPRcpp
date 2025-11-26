@@ -243,6 +243,7 @@ void SplineOP_constrained::predict(int K)
 
 void SplineOP_constrained::backtrack_changes(int K)
 {
+    changepoints = std::vector(1,static_cast<int>(nobs-1));
     // Find best final state
     double min_final = std::numeric_limits<double>::infinity();
     int best_final_state = -1;
