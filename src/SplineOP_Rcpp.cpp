@@ -83,6 +83,7 @@ RCPP_MODULE(splineop) {
         .method("set_qc", &SplineOP_constrained::set_qc)
         .method("get_segment_cost", &SplineOP_constrained::get_segment_cost) 
         .method("predict", &SplineOP_constrained::predict, "Predicts changepoints with K changepoints.")
+        .method("backtrack_changes", &SplineOP_constrained::backtrack_changes, "Backtrack changes in a model that was fitted.")
     
         .method("get_costs", &SplineOP_constrained::get_costs, "Gets the slice K of the get_costs tensor.")
         .method("get_argmin_i", &SplineOP_constrained::get_argmin_i, "Gets the slice K of the get_argmin_i tensor.")
