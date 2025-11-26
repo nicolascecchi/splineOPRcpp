@@ -101,6 +101,7 @@ PYBIND11_MODULE(splineop_cpp, m) {
         .def("set_qc", &SplineOP_constrained::set_qc)
         .def("get_segment_cost", &SplineOP_constrained::get_segment_cost) 
         .def("predict", &SplineOP_constrained::predict, "Predicts changepoints with K changepoints.")
+        .def("backtrack_changepoints", &SplineOP_constrained::backtrack_changepoints, "Backtracks changepoints from a model with computed costs.")
         .def("get_costs", &SplineOP_constrained::get_costs, "Gets the slice K of the get_costs tensor.")
         .def("get_argmin_i", &SplineOP_constrained::get_argmin_i, "Gets the slice K of the get_argmin_i tensor.")
         .def("get_argmin_s", &SplineOP_constrained::get_argmin_s, "Gets the slice K of the get_argmin_s tensor.")
