@@ -8,14 +8,18 @@
 #include "SplineOP.h"
 #include "SplineOP_constrained.h"
 #include "QuadraticCost.h"
-
+#include "Faulhaber.h"
 namespace py = pybind11;
 
 // Define the Python module named 'splineop_py'
 // The macro takes the module name and a variable 'm' for the module object
 PYBIND11_MODULE(splineop_cpp, m) {
     m.doc() = "Python bindings for SplineOP, a change point detection library using optimal partitioning.";
-
+    
+    // Expose Faulhaber function for debugging and compare with Python version.
+    m.def("faulhaber", &Faulhaber, 
+          "Calculates the sum of the first n integers raised to the power of deg.",
+          py::arg("n"), py::arg("deg"));
     // =================================================================
     // 1. Expose SplineOP (Unconstrained Optimal Partitioning)
     // =================================================================
