@@ -50,7 +50,7 @@ double QuadraticCost::interval_cost( size_t s
 {
   //assert(t > s && s >= 0 && t <= this->nobs);
   int n = t - s;
-  double mse = 0.0;
+  double cost = 0.0;
 
   // Coefficients of the quadratic p(x) = a(x - x_s)^2 + b(x - x_s) + c
   double L = static_cast<double>(n);
@@ -81,8 +81,8 @@ double QuadraticCost::interval_cost( size_t s
   dimensionCosts -= 2.0 * b * sum_yL1.array();
   dimensionCosts -= 2.0 * c * sum_y.array();
   dimensionCosts += sum_y2.array();
-  mse = dimensionCosts.sum()/n;
-  return mse;
+  cost = dimensionCosts.sum();
+  return cost;
 }
 
 
