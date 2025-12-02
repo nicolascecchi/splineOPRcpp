@@ -118,7 +118,9 @@ void SplineOP::predict(double beta)
     // reinitialize changepoints and costs for new fit (small overhead for first time)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
     costs.setConstant(std::numeric_limits<double>::infinity());
-  
+    argmin_i.setConstant(-1);
+    argmin_s.setConstant(-1);
+    
     // Loop over data
     for (size_t t = 1; t < nobs; t++)
     { // current last point
@@ -499,9 +501,6 @@ void SplineOP::backtrack_changes()
     }
     // Reverse the order to chronological (0 → nobs)
     std::reverse(changepoints.begin(), changepoints.end());
-    for (size_t cpt = 0; cpt<changepoints.size(); cpt++){
-        changepoints[cpt] += 1;
-    }
 }
 
 
