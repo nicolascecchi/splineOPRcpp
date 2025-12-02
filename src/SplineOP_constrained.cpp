@@ -146,6 +146,8 @@ void SplineOP_constrained::predict(int K)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
     costs.setConstant(std::numeric_limits<double>::infinity());
     costs.chip(0,0).setConstant(0.0);
+    argmin_i.setConstant(-1)
+    argmin_s.setConstant(-1)
 
     for (int k=1; k<K+2; k++) // goes up to K+1 (segments) inclusive
     {   // Loop over data with k segments
@@ -272,10 +274,6 @@ void SplineOP_constrained::backtrack_changes(int K)
     }
     // Reverse the order to chronological (0 → nobs)
     std::reverse(changepoints.begin(), changepoints.end());
-    for (size_t cpt = 0; cpt<changepoints.size(); cpt++)
-    {
-        changepoints[cpt] += 1;
-    }
 }
 
 
