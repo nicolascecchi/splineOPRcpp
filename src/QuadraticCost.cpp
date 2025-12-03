@@ -60,11 +60,22 @@ double QuadraticCost::interval_cost( size_t s
   //// Retrieve y-based sums from cumulative arrays.
   //// These are effectively cusum[t-1] - cusum[s-1] 
   //// when we think our mathematical cost function
-  sum_y    = cumsum_y.col(t)    - cumsum_y.col(s);
-  sum_y2   = cumsum_y2.col(t)   - cumsum_y2.col(s);
-  sum_yL1  = (cumsum_yL1.col(t)  - cumsum_yL1.col(s)) - (s * sum_y);
-  aux = cumsum_yL1.col(t)  - cumsum_yL1.col(s);
-  sum_yL2  = (cumsum_yL2.col(t)  - cumsum_yL2.col(s)) - 2*s*aux+std::pow(s,2)*sum_y;
+  if (s==0)
+  {
+    sum_y = cumsum_y.col(t-1);
+    sum_y2 = cumsum_y2.col(t-1);
+    sum_yL1 = cumsum_yL1.col(t-1);
+    aux = cumsum_yL1.col(t-1);
+    sum_yL2  = cumsum_yL2.col(t-1);  
+  }
+  else
+  {
+    sum_y = cumsum_y.col(t-1)    - cumsum_y.col(s-1);
+    sum_y2 = cumsum_y2.col(t-1)   - cumsum_y2.col(s-1);
+    sum_yL1 = (cumsum_yL1.col(t-1)  - cumsum_yL1.col(s-1)) - (s * sum_y);
+    aux = cumsum_yL1.col(t-1)  - cumsum_yL1.col(s-1);
+    sum_yL2  = (cumsum_yL2.col(t-1)  - cumsum_yL2.col(s-1)) - 2*s*aux+std::pow(s,2)*sum_y;  
+  }
   //// Compute L-based sums via Faulhaber
   double sum_L1 = Faulhaber(n-1,1); //#S1(n-1);
   double sum_L2 = Faulhaber(n-1,2); //#S2(n-1);
