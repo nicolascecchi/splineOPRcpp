@@ -7,3 +7,4 @@ figures
 README.Rmd
 ^LICENSE\.md$
 experiences
+src/py_bindings.cpp
