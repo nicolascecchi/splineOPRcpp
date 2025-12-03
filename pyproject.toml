@@ -17,3 +17,9 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
 ]
+
+[tool.scikit-build]
+cmake.args = [
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_VERBOSE_MAKEFILE=ON"
+]
