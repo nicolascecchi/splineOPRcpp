@@ -491,7 +491,7 @@ void SplineOP::backtrack_changes()
     int s_prev = argmin_s(j, t);
     int i_prev = argmin_i(j, t);
 
-    if (s_prev < 0)
+    if (s_prev == 0)
         break;  // reached the beginning or invalid index
 
     changepoints.push_back(s_prev);  // record change boundary
