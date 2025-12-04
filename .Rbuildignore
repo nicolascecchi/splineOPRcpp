@@ -8,3 +8,8 @@ README.Rmd
 ^LICENSE\.md$
 experiences
 src/py_bindings.cpp
+src/SplineOP
+./setup.py
+./CMakeLists.txt
+dist
+build
