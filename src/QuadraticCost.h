@@ -10,8 +10,8 @@ class QuadraticCost
 {
   private:
     Eigen::MatrixXd y;
-    size_t nobs;
-    size_t ndims;
+    int nobs;
+    int ndims;
     // Precomputed cumulative sums depending on 
     Eigen::MatrixXd cumsum_y;
     Eigen::MatrixXd cumsum_y2;
