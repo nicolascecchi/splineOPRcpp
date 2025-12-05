@@ -2,6 +2,7 @@
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^.splineop-env$
 simulations
 figures
 README.Rmd
@@ -13,3 +14,4 @@ src/SplineOP
 ./CMakeLists.txt
 dist
 build
+./pyproject.toml
