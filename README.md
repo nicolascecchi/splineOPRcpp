@@ -1,14 +1,10 @@
 <a id="top"></a>
 
-# splineOP Vignette
+# splineOP
 
-### Vincent Runge
+## A Dynamic Programming Knot Selection Algorithm for Time-Series Compression With Quadratic Splines
 
-#### LaMME, Evry University, October 27, 2025
-
-<center>
-<img src="man/figures/dust.png" alt="" style="width:30%;"/>
-</center>
+### Nicolás Cecchi, Vincent Runge, Charles Truong and Laurent Oudre
 
 > [Quick start](#start)
 
@@ -16,59 +12,32 @@
 
 > [splineOP](#splineOP)
 
-<center>
-<img src="man/figures/sep.png" alt="" style="width:100%;"/>
-</center>
-
 <a id="start"></a>
 
 ## Quick start
 
 ### Introduction
 
-### Installing the dust Rcpp package
+SplineOP finds changes in acceleration in time-series. 
 
-**REQUIREMENTS:** - R &gt;= 3.4 - devtools :
-`install.packages('devtools')`
 
-The package can then be installed from the github repo with the
-following command:
+### Installing SplineOP for Python
 
-    devtools::install_github("vrunge/splineOP")
+pip install 
+python3 -m build
+pip install .
 
-and imported with:
+**REQUIREMENTS:** - pybind11 scikit-build-core build :
+Currently we distribute the code for local compilation. As usual, it is recommended to work on a virtual environment.
+You can create one by executing `pip -m venv /path/to/env` and then activating it with `source /path/to/env/bin/activate`.
+Once there, you can install the dependencies with `pip install pybind11 scikit-build-core build`
+Finally, to build the package you git clone the repo and navigate to the /splineOPRCpp folder, build with `python3 -m build` and install with `pip install .`.
 
-    library(splineOP)
+Once you have done that, you can import the package as following:
+
+    `import splineop_cpp as spop`
 
 ### A simple example
-
-We generate some 1D time series of length `400` from the Gaussian model
-and one change in the middle of the sequence.
-
-    library(splineOP)
-    # Example with 5 segments and given accelerations
-    segments <- generate_segment_lengths(400, 5)
-    accelerations <- rnorm(5)
-    result <- generate_Qsplines(segments, accelerations, max1 = TRUE)
-    #'
-    # Inspect results
-    result$p  # positions
-
-    ## [1]  0.0000000 -1.0000000 -0.9623135 -0.7468151 -0.2598189
-
-    result$v  # velocities
-
-    ## [1] -0.014347548  0.003111593  0.003169492  0.001140476  0.010318258
-
-    result$a  # accelerations
-
-    ## [1]  9.808506e-05  4.824925e-06 -2.029016e-05  1.079739e-04  5.959753e-06
-
-    #'
-    # Plot positions along the spline
-    plot_Qspline(result, segments)
-
-![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
 
 [(Back to Top)](#top)
 
