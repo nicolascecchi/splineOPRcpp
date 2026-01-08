@@ -10,3 +10,5 @@ src/*.dll
 experiences/
 simulations/paper/**/*.csv
 simulations/paper/**/*.json
+.splineop/
+dist/
