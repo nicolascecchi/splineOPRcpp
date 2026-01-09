@@ -1,10 +1,14 @@
 <a id="top"></a>
 
-# splineOP
+# SplineOP
 
 ## A Dynamic Programming Knot Selection Algorithm for Time-Series Compression With Quadratic Splines
 
 ### Nicolás Cecchi, Vincent Runge, Charles Truong and Laurent Oudre
+
+- This project is the implementation of a paper submitted for peer-review. The paper is currently being handled by the editors of the journal. 
+
+- There are plans for refactoring this code and integrating the method to the [ruptures library](https://pypi.org/project/ruptures/), stay tuned. 
 
 > [Quick start](#start)
 
@@ -18,14 +22,10 @@
 
 ### Introduction
 
-SplineOP finds changes in acceleration in time-series. 
+SplineOP finds changes in acceleration in time-series by using a Dynamic Programming algorithm. 
 
 
 ### Installing SplineOP for Python
-
-pip install 
-python3 -m build
-pip install .
 
 **REQUIREMENTS:** - pybind11 scikit-build-core build ;
 
