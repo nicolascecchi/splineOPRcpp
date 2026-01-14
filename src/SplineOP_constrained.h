@@ -16,48 +16,25 @@
 
 class SplineOP_constrained
 {
-    // private methods and attributes
-    private:
-        size_t nobs; // Size of the data --> Change to npoints for being more explicit?
-        size_t ndims;
-        int K;
-        std::vector<int> sp;
-        size_t nstates;
-        size_t nspeeds;
-        //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
-        
-        Eigen::Tensor<double, 4> speeds; // best speed holder
-        Eigen::Tensor<double, 3> costs;  // K+1 matrices of costs
-        Eigen::MatrixXd initSpeeds; //  to check if matrix or vector ; set of initial speeds;
-        std::vector<Eigen::MatrixXd> states; // sets of state for each time 
-        
-        Eigen::Tensor<int,3> argmin_i; // Store INDEX of best previous state
-        Eigen::Tensor<int,3> argmin_s; // Store best previous time
-        
-        QuadraticCost qc;
-        
-        std::vector<int> changepoints;
-        std::vector<Eigen::MatrixXd> generate_states(
-                                            size_t nstates,
-                                            Eigen::MatrixXd data, // Input is now MatrixXd
-                                            double data_var, 
-                                            int seed);
-        Eigen::MatrixXd generate_matrix_of_noise( //MON
-                                            std::mt19937& gen, 
-                                            double std_dev, 
-                                            size_t rows, 
-                                            size_t cols);
-        
-        void compute_best_with_change(int K, size_t t, size_t j);
-        void compute_best_without_change( Eigen::VectorXd& p_t, double& current_MIN,Eigen::VectorXd& best_out_speed,int& best_i,int& best_s, int& t);
-
-
-
-    //public methods and attributes
+        //public methods and attributes
     public:
+    //constructor
+        explicit SplineOP_constrained(Eigen::MatrixXd data
+                      ,int nstates
+                      ,std::vector<int> sp
+                      ,double data_var
+                      ,int K
+                      ,int seed);
+        
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(int K); // predicts with a given penalty
         void backtrack_changes(int K);
+        
+        //setters 
+        void set_qc(Eigen::MatrixXd& data);
+        void set_states(std::vector<Eigen::MatrixXd> new_states);// {states = new_states;}
+        void set_initSpeeds(Eigen::MatrixXd new_initSpeeds);// {initSpeeds = new_initSpeeds;}
+
         //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
         std::vector<Eigen::MatrixXd> get_states() const {return states;}
@@ -78,20 +55,43 @@ class SplineOP_constrained
         Eigen::VectorXd get_sum_y2()  const {return qc.get_sum_y2();}
         Eigen::VectorXd get_sum_yL1() const {return qc.get_sum_yL1();}
         Eigen::VectorXd get_sum_yL2() const {return qc.get_sum_yL2();}
-
-        void set_qc(Eigen::MatrixXd& data);
-            //setters 
-        void set_states(std::vector<Eigen::MatrixXd> new_states);// {states = new_states;}
-        void set_initSpeeds(Eigen::MatrixXd new_initSpeeds);// {initSpeeds = new_initSpeeds;}
+        
 
     
-        //constructor
-        explicit SplineOP_constrained(Eigen::MatrixXd data
-                      ,size_t nstates
-                      ,std::vector<int> sp
-                      ,double data_var
-                      ,int K
-                      ,int seed);
+    // private methods and attributes
+    private:
+        int nobs; // Size of the data --> Change to npoints for being more explicit?
+        int ndims;
+        int K;
+        std::vector<int> sp;
+        int nstates;
+        int nspeeds;
+        //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
+        
+        Eigen::Tensor<double, 4> speeds; // best speed holder
+        Eigen::Tensor<double, 3> costs;  // K+1 matrices of costs
+        Eigen::MatrixXd initSpeeds; //  to check if matrix or vector ; set of initial speeds;
+        std::vector<Eigen::MatrixXd> states; // sets of state for each time 
+        
+        Eigen::Tensor<int,3> argmin_i; // Store INDEX of best previous state
+        Eigen::Tensor<int,3> argmin_s; // Store best previous time
+        
+        QuadraticCost qc;
+        
+        std::vector<int> changepoints;
+        std::vector<Eigen::MatrixXd> generate_states(
+                                            int nstates,
+                                            Eigen::MatrixXd data, // Input is now MatrixXd
+                                            double data_var, 
+                                            int seed);
+        Eigen::MatrixXd generate_matrix_of_noise( //MON
+                                            std::mt19937& gen, 
+                                            double std_dev, 
+                                            int rows, 
+                                            int cols);
+        
+        void compute_best_with_change(int K, int t, int j);
+        void compute_best_without_change( Eigen::VectorXd& p_t, double& current_MIN,Eigen::VectorXd& best_out_speed,int& best_i,int& best_s, int& t);
 
 };
 

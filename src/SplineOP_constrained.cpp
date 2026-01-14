@@ -7,13 +7,13 @@
 
 // CONSTRUCTOR
 SplineOP_constrained::SplineOP_constrained(Eigen::MatrixXd data
-                ,size_t nstates
-                ,std::vector<int> sp
-                ,double data_var
-                ,int K
-                ,int seed):
-     nobs{static_cast<size_t>(data.cols())}
-    ,ndims{static_cast<size_t>(data.rows())}
+                                            ,int nstates
+                                            ,std::vector<int> sp
+                                            ,double data_var
+                                            ,int K
+                                            ,int seed):
+     nobs{static_cast<int>(data.cols())}
+    ,ndims{static_cast<int>(data.rows())}
     ,K{K}
     ,sp{sp}
     ,nstates{nstates}   
@@ -27,7 +27,8 @@ SplineOP_constrained::SplineOP_constrained(Eigen::MatrixXd data
     ,qc{data}
     ,changepoints(1,static_cast<int>(data.cols())) //??? place holder, will be superseeded afterwards
     {
-        costs.setConstant(std::numeric_limits<double>::infinity());
+        const double INF = std::numeric_limits<double>::infinity();
+        costs.setConstant(INF);
         argmin_i.setConstant(-1);
         argmin_s.setConstant(-1);
 
@@ -37,7 +38,25 @@ SplineOP_constrained::SplineOP_constrained(Eigen::MatrixXd data
     }
 
 
-// Constructor with given speeds
+Eigen::MatrixXd SplineOP_constrained::generate_matrix_of_noise(std::mt19937& gen
+                                                            ,double std_dev
+                                                            ,int rows
+                                                            ,int cols) 
+{
+    Eigen::MatrixXd matrix_of_noise(rows, cols);
+    // Use N(0, std_dev) distribution
+    std::normal_distribution<double> normal_dist(0.0, std_dev);
+    
+    // NOTE: This inner loop is unavoidable with std::normal_distribution.
+    for (int j = 0; j < cols; ++j) 
+    {
+        for (int i = 0; i < rows; ++i) 
+        {
+            matrix_of_noise(i, j) = normal_dist(gen);
+        }
+    }
+    return matrix_of_noise;
+}
 
 /**
  * @brief Generates a 3D structure of states from observed data.
@@ -48,15 +67,14 @@ SplineOP_constrained::SplineOP_constrained(Eigen::MatrixXd data
  * @return std::vector<Eigen::MatrixXd> The 3D state structure: 
  * vector index = time (t), Matrix = (nstates x ndims).
  */
-std::vector<Eigen::MatrixXd> SplineOP_constrained::generate_states(
-    size_t nstates,
-    Eigen::MatrixXd data, // Input is now MatrixXd
-    double data_var, 
-    int seed)
+std::vector<Eigen::MatrixXd> SplineOP_constrained::generate_states(int nstates
+                                                                   , Eigen::MatrixXd data
+                                                                   , double data_var
+                                                                   , int seed)
 {
-    //size_t nobs = data.cols(); // Observations/Time (N) already known
-    //size_t ndims = data.rows(); // Coordinates/Dimensions (K)
-    size_t noise_states = nstates - 1; // Number of states requiring noise
+    //int nobs = data.cols(); // Observations/Time (N) already known
+    //int ndims = data.rows(); // Coordinates/Dimensions (K)
+    int noise_states = nstates - 1; // Number of states requiring noise
     
     // 3D structure: vector index = time (t), Matrix = (ndims x nstates)
     std::vector<Eigen::MatrixXd> states_3d;
@@ -66,7 +84,7 @@ std::vector<Eigen::MatrixXd> SplineOP_constrained::generate_states(
     double std_dev = std::sqrt(data_var);
 
     // Loop over time (observations)
-    for (size_t t = 0; t < nobs; t++)
+    for (int t = 0; t < nobs; t++)
     {
         // 1. Create the 2D matrix for the current time slice (ndims x nstates)
         Eigen::MatrixXd current_time_states(ndims, nstates);
@@ -83,42 +101,36 @@ std::vector<Eigen::MatrixXd> SplineOP_constrained::generate_states(
     return states_3d;
 }
 
-Eigen::MatrixXd SplineOP_constrained::generate_matrix_of_noise( //MON
-    std::mt19937& gen, 
-    double std_dev, 
-    size_t rows, 
-    size_t cols) 
-{
-    Eigen::MatrixXd matrix_of_noise(rows, cols);
-    // Use N(0, std_dev) distribution
-    std::normal_distribution<double> normal_dist(0.0, std_dev);
-    
-    // NOTE: This inner loop is unavoidable with std::normal_distribution.
-    for (size_t j = 0; j < cols; ++j) {
-        for (size_t i = 0; i < rows; ++i) {
-            matrix_of_noise(i, j) = normal_dist(gen);
-        }
-    }
-    return matrix_of_noise;
-}
-void SplineOP_constrained::compute_best_with_change(int K, size_t t, size_t j)
-{ 
 
+void SplineOP_constrained::compute_best_with_change(int K, int t, int j)
+{ 
+    // TO BE IMPLEMENTED
 }
 void SplineOP_constrained::compute_best_without_change(Eigen::VectorXd& p_t, double& current_MIN,Eigen::VectorXd& best_out_speed,int& best_i,int& best_s, int& t)
 {
-
+    // TO BE IMPLEMENTED
 }
+
+// TO ADD DOCUMENTATION
 void SplineOP_constrained::predict(int K)
 {
-    Eigen::VectorXd v_s;
+    const double INF  = std::numeric_limits<double>::infinity(); // placeholder for lowest cost so far
+    double current_MIN = INF; 
+
+    // Preallocate temporaries (all have ndims)
+    Eigen::VectorXd p_t; // position at time t
+    Eigen::VectorXd p_s; // position at time s
+    Eigen::VectorXd v_s; // speeds at time s
+    Eigen::VectorXd p_s_best(ndims); // best initial position
+    Eigen::VectorXd v_s_best(ndims); // best initial speed
+    
+
     Eigen::VectorXd v_t;
-    Eigen::VectorXd p_s;
-    Eigen::VectorXd p_t;
     Eigen::VectorXd best_out_speed;
-    double interval_cost; // Cost of a 
-    double candidate; // Cost of candidate value
-    double current_MIN = std::numeric_limits<double>::infinity(); // placeholder for lowest cost so far
+
+    // variables for optimization
+    double interval_cost; // Quadratic Cost of interval being evaluated 
+    double candidate; // Total Cost of candidate value
     int best_i = -1;  // Best previous state index 
     int best_s = -1;  // Best previous time index
     Eigen::Tensor<double, 1> tmp_speed_from_tensor(ndims); // placeholder to get current speeds
@@ -142,67 +154,86 @@ void SplineOP_constrained::predict(int K)
     costs.resize(dp_dims);
     argmin_i.resize(dp_dims);
     argmin_s.resize(dp_dims);
+
     // reinitialize changepoints and costs for new fit (small overhead for first time)
+    // its the same as the constructor, but allows to reuse the same object
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
-    costs.setConstant(std::numeric_limits<double>::infinity());
+    costs.setConstant(INF);
     costs.chip(0,0).setConstant(0.0);
     argmin_i.setConstant(-1);
     argmin_s.setConstant(-1);
 
-    for (int k=1; k<K+2; k++) // goes up to K+1 (segments) inclusive
-    {   // Loop over data with k segments
-        for (size_t t = 1; t < nobs; t++)
-        { // current last point
-            for (size_t j = 0; j < nstates; j++)
+
+    // DYNAMIC PROGRAMMING LOOPS
+    // LOOP OVER THE NUMBER OF SEGMENTS
+    // small k is the number of segments being fit
+    for (int k=1; k<K+2; k++) // goes up to K+1 (segments, hence K changepoints) inclusive
+    {   // Loop time axis
+        for (int t = 1; t < nobs; t++)
+        { // Loop over end state index at time [t]
+            const Eigen::MatrixXd &states_t = states[t];
+            for (int j = 0; j < nstates; j++)
             { // current last state
-                p_t = states[t].col(j).eval(); // Fix final position
+                p_t = states_t.col(j); // Fix final position
                 best_out_speed;
-                current_MIN = std::numeric_limits<double>::infinity();
+                current_MIN = INF;
                 best_i = -1;
                 best_s = -1;
+
+                ///////// THIS CASE IS SOMEWHAT SIMILAR TO S=0
+                // IN THE PENALIZED VERSION, BUT HERE THE EVALUATION
+                // OF K==1 HAPPENS ONLY K TIMES, WHICH IS NORMALLY SMALL
+                // WE DO NOT EXPECT K TO BE GIGANTIC.
+                // PRIORITY TO TAKE IT OUSIDE IS LOW
                 if (k==1)
                 {
-                    s=0;
-                    for (size_t i = 0; i < nstates; i++)
+                    int best_init_spdidx;
+                    int s = 0;
+                    const Eigen::MatrixXd &states_s = states[s];
+                    for (int i = 0; i < nstates; i++)
                     { // previous state
                         // Fix start and end position in time and space
-                        p_s = states[s].col(i).eval(); // Get starting state position
-                        for (size_t spdidx = 0; spdidx < nspeeds; spdidx++)
+                        p_s = states_s.col(i); // Get starting state position
+                        for (int spdidx = 0; spdidx < nspeeds; spdidx++)
                         { // init speed loop
-                            v_s = initSpeeds.col(spdidx).eval();
-                            v_t = 2*(p_t - p_s)/(t - s) - v_s; // simple slope rule
+                            v_s = initSpeeds.col(spdidx).eval();                            
                             // Quadratic cost for interval [s, t)
                             interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
                             // Candidate cost (DP recurrence)
-                            candidate = interval_cost;
+                            candidate = interval_cost; // Unnecesary, but prefer for clarity
                             if (candidate < current_MIN)
                             {
                                 current_MIN = candidate;
-                                best_out_speed = v_t;
+                                best_init_spdidx = spdidx;
                                 best_i = i;
                                 best_s = s;
                             }
                         }                        
                     }
-                    // update tables
+                    // update tables for only one segment
                     costs(k, j, t) = current_MIN;
                     //update speeds [K, time, dims, states]
+                    p_s_best = states[best_s].col(best_i);
+                    v_s_best = initSpeeds.col(best_init_spdidx);
+                    best_out_speed = 2.0/(nobs) * (p_t - p_s_best) - v_s_best;
                     auto speeds_chip_k = speeds.chip(k, 0); // returns [time, dims, states] 
                     auto speeds_chip_time = speeds_chip_k.chip(t,0); //returns  [dims, states]
                     auto speeds_chip_state = speeds_chip_time.chip(j, 1);// returns [ndims]
+                    // NEED A BETTER EXPLANATION OF WHY WE DO THIS CONVOLUTED STUFF HERE
                     speeds_chip_state = Eigen::TensorMap<Eigen::Tensor<const double, 1>>(best_out_speed.data(), ndims);
                     // update best params
                     argmin_i(k, j, t) = best_i;
                     argmin_s(k, j, t) = best_s; // toujours 0 here
-                }
+                } /// end of case with only one segment
                 else // k > 1
                 {
-                    for (size_t s = k; s < t; s++)
+                    for (int s = k; s < t; s++)
                     { // previous times
-                        for (size_t i = 0; i < nstates; i++)
+                        const Eigen::MatrixXd &states_s = states[s];
+                        for (int i = 0; i < nstates; i++)
                         {
-                            p_s = states[s].col(i).eval();
-                            //Rcpp::checkUserInterrupt(); // allow user interruption
+                            p_s = states_s.col(i);
+
                             // compute speed
                             // sequential chipping. Recall that each cheap removes 1 dimension,
                             // thats why we always chip at dimension 0
@@ -211,6 +242,8 @@ void SplineOP_constrained::predict(int K)
                             auto chip_state = chip_time.chip(i, 1); // take the ending state slice
                             tmp_speed_from_tensor = chip_state.eval();
                             v_s = Eigen::Map<Eigen::VectorXd>(tmp_speed_from_tensor.data(), tmp_speed_from_tensor.size());
+                            
+                            
                             v_t = 2*(p_t - p_s)/(t - s) - v_s; 
                             // Quadratic cost for interval [s, t)
                             // THIS INTERVAL COST IS BREAKING THE CODE 
@@ -249,7 +282,7 @@ void SplineOP_constrained::backtrack_changes(int K)
     // Find best final state
     double min_final = std::numeric_limits<double>::infinity();
     int best_final_state = -1;
-    for (size_t j = 0; j < nstates; j++)
+    for (int j = 0; j < nstates; j++)
     {
         if (costs(K+1, j, nobs - 1) < min_final)
         {
