@@ -1,14 +1,32 @@
+# R related files
 .Rproj
 .Rhistory
 .RData
 .Ruserdata
+R/splineOP.R
+.Rprofile
+.Rproj.user
+
+# General project files
 .vscode
 src/*.o
 src/*.so
 src/*.dll
-.Rproj.user
+build/
+
+# Python built files
+dist/
+
+# Files from simulations
 experiences/
 simulations/paper/**/*.csv
 simulations/paper/**/*.json
+
+# Files to ignore from previous attempts of the project
+# likely to be deleted later
+.ignorefile/
+
+# Python testing environments
+test-changes/
+.splineop-env/
 .splineop/
-dist/
