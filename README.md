@@ -31,7 +31,7 @@ SplineOP finds changes in acceleration in time-series by using a Dynamic Program
 
 Currently we distribute the code for local compilation. As usual, it is recommended to work on a virtual environment.
 
-You can create one by executing `pip -m venv /path/to/env` and then activating it with `source /path/to/env/bin/activate`. (see [venv](https://docs.python.org/3/library/venv.html) for details)
+You can create one by executing `python3 -m venv /path/to/env` and then activating it with `source /path/to/env/bin/activate`. (see [venv](https://docs.python.org/3/library/venv.html) for details)
 
 Once there, you can install the dependencies with `pip install pybind11 scikit-build-core build`.
 
