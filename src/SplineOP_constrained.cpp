@@ -264,16 +264,16 @@ void SplineOP_constrained::predict(int K)
                     const Eigen::MatrixXd &states_s = states[best_s];
                     p_s_best = states_s.col(best_i);
 
-                    auto chip_k = speeds.chip(k-1, 0); // get speeds from previous iteration
-                    auto chip_time = chip_k.chip(best_s,0); // at time s
-                    auto chip_state = chip_time.chip(best_i, 1); // take the ending state slice
-                    tmp_speed_from_tensor = chip_state.eval();
+                    tmp_speed_from_tensor = speeds.chip(k-1, 0).chip(best_s,0).chip(best_i, 1).eval(); // get speeds from previous iteration
+                    //auto chip_time = chip_k.chip(best_s,0); // at time s
+                    //auto chip_state = chip_time.chip(best_i, 1); // take the ending state slice
+                    //tmp_speed_from_tensor = chip_state.eval();
                     v_s = Eigen::Map<Eigen::VectorXd>(tmp_speed_from_tensor.data(), tmp_speed_from_tensor.size());        
                     best_out_speed = 2.0/(t - best_s) * (p_t - p_s_best) - v_s;
 
-                    auto speeds_chip_k = speeds.chip(k, 0); // returns [time, dims, states] 
-                    auto speeds_chip_time = speeds_chip_k.chip(t,0); //returns  [dims, states]
-                    auto speeds_chip_state = speeds_chip_time.chip(j, 1);// returns [ndims]
+                    auto speeds_chip_state = speeds.chip(k, 0).chip(t,0).chip(j, 1); // returns [time, dims, states] 
+                    //auto speeds_chip_time = speeds_chip_k.chip(t,0); //returns  [dims, states]
+                    //auto speeds_chip_state = speeds_chip_time.chip(j, 1);// returns [ndims]
                     speeds_chip_state = Eigen::TensorMap<Eigen::Tensor<const double, 1>>(best_out_speed.data(), ndims);
                     // update best params
                     argmin_i(k, j, t) = best_i;
