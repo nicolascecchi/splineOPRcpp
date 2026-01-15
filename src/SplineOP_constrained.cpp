@@ -2,7 +2,6 @@
 #include <Eigen/Dense>
 #include "SplineOP_constrained.h"
 #include "SpeedEstimator.h"
-#include "logger.h"
 // Continue with initSpeeds that has a problem with the shape and type
 
 
