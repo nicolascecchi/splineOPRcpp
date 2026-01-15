@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include "SplineOP_constrained.h"
 #include "SpeedEstimator.h"
+#include "logger.h"
 // Continue with initSpeeds that has a problem with the shape and type
 
 
@@ -118,15 +119,15 @@ void SplineOP_constrained::predict(int K)
     double current_MIN = INF; 
 
     // Preallocate temporaries (all have ndims)
-    Eigen::VectorXd p_t; // position at time t
-    Eigen::VectorXd p_s; // position at time s
-    Eigen::VectorXd v_s; // speeds at time s
+    Eigen::VectorXd p_t(ndims); // position at time t
+    Eigen::VectorXd p_s(ndims); // position at time s
+    Eigen::VectorXd v_s(ndims); // speeds at time s
     Eigen::VectorXd p_s_best(ndims); // best initial position
     Eigen::VectorXd v_s_best(ndims); // best initial speed
     
 
-    Eigen::VectorXd v_t;
-    Eigen::VectorXd best_out_speed;
+    Eigen::VectorXd v_t(ndims);
+    Eigen::VectorXd best_out_speed(ndims);
 
     // variables for optimization
     double interval_cost; // Quadratic Cost of interval being evaluated 
@@ -169,13 +170,12 @@ void SplineOP_constrained::predict(int K)
     // small k is the number of segments being fit
     for (int k=1; k<K+2; k++) // goes up to K+1 (segments, hence K changepoints) inclusive
     {   // Loop time axis
-        for (int t = 1; t < nobs; t++)
+        for (int t = k+1; t < nobs; t++)
         { // Loop over end state index at time [t]
             const Eigen::MatrixXd &states_t = states[t];
             for (int j = 0; j < nstates; j++)
             { // current last state
                 p_t = states_t.col(j); // Fix final position
-                best_out_speed;
                 current_MIN = INF;
                 best_i = -1;
                 best_s = -1;
@@ -215,10 +215,10 @@ void SplineOP_constrained::predict(int K)
                     //update speeds [K, time, dims, states]
                     p_s_best = states[best_s].col(best_i);
                     v_s_best = initSpeeds.col(best_init_spdidx);
-                    best_out_speed = 2.0/(nobs) * (p_t - p_s_best) - v_s_best;
+                    best_out_speed = 2.0/(nobs-1) * (p_t - p_s_best) - v_s_best;
                     auto speeds_chip_k = speeds.chip(k, 0); // returns [time, dims, states] 
                     auto speeds_chip_time = speeds_chip_k.chip(t,0); //returns  [dims, states]
-                    auto speeds_chip_state = speeds_chip_time.chip(j, 1);// returns [ndims]
+                    auto speeds_chip_state = speeds_chip_time.chip(j, 1); // returns [ndims]
                     // NEED A BETTER EXPLANATION OF WHY WE DO THIS CONVOLUTED STUFF HERE
                     speeds_chip_state = Eigen::TensorMap<Eigen::Tensor<const double, 1>>(best_out_speed.data(), ndims);
                     // update best params
@@ -227,7 +227,7 @@ void SplineOP_constrained::predict(int K)
                 } /// end of case with only one segment
                 else // k > 1
                 {
-                    for (int s = k; s < t; s++)
+                    for (int s = k-1; s < t; s++)
                     { // previous times
                         const Eigen::MatrixXd &states_s = states[s];
                         for (int i = 0; i < nstates; i++)
@@ -243,8 +243,7 @@ void SplineOP_constrained::predict(int K)
                             tmp_speed_from_tensor = chip_state.eval();
                             v_s = Eigen::Map<Eigen::VectorXd>(tmp_speed_from_tensor.data(), tmp_speed_from_tensor.size());
                             
-                            
-                            v_t = 2*(p_t - p_s)/(t - s) - v_s; 
+                            //v_t = 2*(p_t - p_s)/(t - s) - v_s; 
                             // Quadratic cost for interval [s, t)
                             // THIS INTERVAL COST IS BREAKING THE CODE 
                             interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
@@ -252,8 +251,8 @@ void SplineOP_constrained::predict(int K)
                             candidate = costs(k-1, i, s) + interval_cost;         
                             if (candidate < current_MIN)
                             {
-                                current_MIN = candidate;
                                 best_out_speed = v_t;
+                                current_MIN = candidate;
                                 best_i = i;
                                 best_s = s;
                             }
@@ -262,6 +261,16 @@ void SplineOP_constrained::predict(int K)
                     // Update tables with best results.
                     costs(k, j, t) = current_MIN;
                     //update speeds [K, time, dims, states]
+                    const Eigen::MatrixXd &states_s = states[best_s];
+                    p_s_best = states_s.col(best_i);
+
+                    auto chip_k = speeds.chip(k-1, 0); // get speeds from previous iteration
+                    auto chip_time = chip_k.chip(best_s,0); // at time s
+                    auto chip_state = chip_time.chip(best_i, 1); // take the ending state slice
+                    tmp_speed_from_tensor = chip_state.eval();
+                    v_s = Eigen::Map<Eigen::VectorXd>(tmp_speed_from_tensor.data(), tmp_speed_from_tensor.size());        
+                    best_out_speed = 2.0/(t - best_s) * (p_t - p_s_best) - v_s;
+
                     auto speeds_chip_k = speeds.chip(k, 0); // returns [time, dims, states] 
                     auto speeds_chip_time = speeds_chip_k.chip(t,0); //returns  [dims, states]
                     auto speeds_chip_state = speeds_chip_time.chip(j, 1);// returns [ndims]
