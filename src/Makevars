@@ -1,2 +1,5 @@
-CXXFLAGS += -Wno-ignored-attributes
-CXXFLAGS += -g
+SOURCES = SplineOP_Rcpp.cpp Faulhaber.cpp QuadraticCost.cpp SplineOP_constrained.cpp SpeedEstimator.cpp
+OBJECTS = $(SOURCES:.cpp=.o)
+CXXFLAGS += -Wno-ignored-attributes -g
+
+PKG_LIBS = $(OBJECTS) $(shell ${R_HOME}/bin/Rscript -e "Rcpp:::LdFlags()")
