@@ -171,10 +171,9 @@ void SplineOP_constrained::predict(int K)
     {   // Loop time axis
         for (int t = k+1; t < nobs; t++)
         { // Loop over end state index at time [t]
-            const Eigen::MatrixXd &states_t = states[t];
             for (int j = 0; j < nstates; j++)
             { // current last state
-                p_t = states_t.col(j); // Fix final position
+                p_t = states[t].col(j); // Fix final position
                 current_MIN = INF;
                 best_i = -1;
                 best_s = -1;
@@ -188,11 +187,10 @@ void SplineOP_constrained::predict(int K)
                 {
                     int best_init_spdidx;
                     int s = 0;
-                    const Eigen::MatrixXd &states_s = states[s];
                     for (int i = 0; i < nstates; i++)
                     { // previous state
                         // Fix start and end position in time and space
-                        p_s = states_s.col(i); // Get starting state position
+                        p_s = states[s].col(i); // Get starting state position
                         for (int spdidx = 0; spdidx < nspeeds; spdidx++)
                         { // init speed loop
                             v_s = initSpeeds.col(spdidx).eval();                            
@@ -228,10 +226,9 @@ void SplineOP_constrained::predict(int K)
                 {
                     for (int s = k-1; s < t; s++)
                     { // previous times
-                        const Eigen::MatrixXd &states_s = states[s];
                         for (int i = 0; i < nstates; i++)
                         {
-                            p_s = states_s.col(i);
+                            p_s = states[s].col(i);
 
                             // compute speed
                             // sequential chipping. Recall that each cheap removes 1 dimension,
@@ -260,8 +257,7 @@ void SplineOP_constrained::predict(int K)
                     // Update tables with best results.
                     costs(k, j, t) = current_MIN;
                     //update speeds [K, time, dims, states]
-                    const Eigen::MatrixXd &states_s = states[best_s];
-                    p_s_best = states_s.col(best_i);
+                    p_s_best = states[best_s].col(best_i);
 
                     tmp_speed_from_tensor = speeds.chip(k-1, 0).chip(best_s,0).chip(best_i, 1).eval(); // get speeds from previous iteration
                     //auto chip_time = chip_k.chip(best_s,0); // at time s

@@ -133,16 +133,14 @@ void SplineOP::predict(double beta)
     int best_speed_idx = -1; // Best initial speed idx, only meaningful
                              // if best_s = 0.
 
-    
     // Loop over end times
     for (int t = 1; t < nobs; t++)
     {
-        // Get states for the ending time being evaluated 
-        const Eigen::MatrixXd &states_t = states[t];
+        // Get states for the ending time being evaluated
         // Loop over indexes of the end states at time t
         for (int j = 0; j < nstates; j++)
         { // current last state
-            p_t = states_t.col(j); // Fix final position
+            p_t = states[t].col(j); // Fix final position
             
             // Set optimization variables to defaults
             // We need to reset for each ending state j
@@ -154,11 +152,10 @@ void SplineOP::predict(double beta)
             // Treat the case of s = 0 explicitly
             // Avoid evaluating the if(s==0) t times, when it is only true once.
             int s = 0;
-            const Eigen::MatrixXd &states_s = states[s];
             // Loop over indexes of initial state
             for (int i = 0; i < nstates; i++)
             { 
-                p_s = states_s.col(i); // Fix start position in space
+                p_s = states[s].col(i); // Fix start position in space
                 // Loop over initial speeds
                 for (int spdidx = 0; spdidx < nspeeds; spdidx++)
                 { 
@@ -182,14 +179,12 @@ void SplineOP::predict(double beta)
             for (int s = 1; s < t; s++)
             { // previous times
                 //Rcpp::checkUserInterrupt(); // allow user interruption
-                const Eigen::MatrixXd &states_s = states[s];
-                const Eigen::MatrixXd &speeds_s = speeds[s];
 
                 // Loop over previous-time state indexes
                 for (int i = 0; i < nstates; i++)
                 { // previous state
-                    p_s = states_s.col(i); // Get starting state position
-                    v_s = speeds_s.col(i); // Get starting speed
+                    p_s = states[s].col(i); // Get starting state position
+                    v_s = speeds[s].col(i); // Get starting speed
 
                     // Quadratic cost for interval [s, t)
                     interval_cost = qc.interval_cost(s, t, p_s, p_t, v_s);
