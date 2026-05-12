@@ -33,6 +33,7 @@ pybind11_add_module(splineop_cpp
     src/QuadraticCost.cpp
     src/SpeedEstimator.cpp
     src/SplineOP.cpp
+    src/SplineOP_iterated.cpp
     src/SplineOP_constrained.cpp
 )
 

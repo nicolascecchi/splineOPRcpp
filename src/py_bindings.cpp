@@ -6,6 +6,7 @@
 
 // Include your C++ headers
 #include "SplineOP.h"
+#include "SplineOP_iterated.h"
 #include "SplineOP_constrained.h"
 #include "QuadraticCost.h"
 #include "Faulhaber.h"
@@ -68,7 +69,57 @@ PYBIND11_MODULE(splineop_cpp, m) {
         .def("get_non_pruned_times", &SplineOP::get_non_pruned_times, "Non pruned times at the end.")
         .def("set_init_speeds", &SplineOP::set_initSpeeds)
         .def("set_states", &SplineOP::set_states);
-        
+        // =================================================================
+    // 1. Expose SplineOP (Unconstrained Optimal Partitioning)
+    // =================================================================
+    py::class_<SplineOP_iterated>(m, "SplineOP_iterated")
+        // Constructor: .constructor<...>() becomes .def(py::init<...>())
+        .def(py::init<
+             Eigen::MatrixXd,   // data
+             Eigen::MatrixXd,   // data_states
+             size_t,            // nstates
+             std::vector<int>,  // initial speed size for estimator
+             double,            // data_var
+             int>(),            // seed
+             py::arg("data"),
+             py::arg("data_states"),
+             py::arg("nstates"),
+             py::arg("initial_speed_size"),
+             py::arg("data_var"),
+             py::arg("seed")
+             )
+
+        // Read-Only Properties (Getters)
+        // .property("R_name", &Class::get_method) becomes .def_property_readonly("py_name", &Class::get_method)
+        .def_property_readonly("changepoints", &SplineOP_iterated::get_changepoints) 
+        .def_property_readonly("speeds", &SplineOP_iterated::get_speeds) 
+        .def_property_readonly("costs", &SplineOP_iterated::get_costs) 
+        .def_property_readonly("init_speeds", &SplineOP_iterated::get_initSpeeds) 
+        .def_property_readonly("states", &SplineOP_iterated::get_states) 
+        .def_property_readonly("argmin_i", &SplineOP_iterated::get_argmin_i) 
+        .def_property_readonly("argmin_s", &SplineOP_iterated::get_argmin_s)
+
+        // Cumulative Sum Getters
+        .def_property_readonly("cumsum_y", &SplineOP_iterated::get_cumsum_y)
+        .def_property_readonly("cumsum_y2", &SplineOP_iterated::get_cumsum_y2)
+        .def_property_readonly("cumsum_yL1", &SplineOP_iterated::get_cumsum_yL1)
+        .def_property_readonly("cumsum_yL2", &SplineOP_iterated::get_cumsum_yL2)
+        .def_property_readonly("sum_y", &SplineOP_iterated::get_sum_y)
+        .def_property_readonly("sum_y2", &SplineOP_iterated::get_sum_y2)
+        .def_property_readonly("sum_yL1", &SplineOP_iterated::get_sum_yL1)
+        .def_property_readonly("sum_yL2", &SplineOP_iterated::get_sum_yL2)
+
+        // Methods
+        .def("set_qc", &SplineOP_iterated::set_qc)
+        .def("get_segment_cost", &SplineOP_iterated::get_segment_cost) 
+        .def("predict", &SplineOP_iterated::predict, "Predicts changepoints with given penalty.")
+        .def("pruningv1", &SplineOP_iterated::pruningv1, "Predicts changepoints with given penalty and pruning.")
+        .def("pruningv2", &SplineOP_iterated::pruningv2, "Predicts changepoints with given penalty and pruning.")
+        .def("get_pruning_costs", &SplineOP_iterated::get_pruning_costs, "Should be useless at the end, all +inf.")
+        .def("get_non_pruned_times", &SplineOP_iterated::get_non_pruned_times, "Non pruned times at the end.")
+        .def("set_init_speeds", &SplineOP_iterated::set_initSpeeds)
+        .def("set_states", &SplineOP_iterated::set_states);
+    
     // =================================================================
     // 2. Expose SplineOP_constrained (Fixed-K Optimal Partitioning)
     // =================================================================
