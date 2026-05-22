@@ -27,7 +27,8 @@ class SplineOP
                       ,int seed);    
         
         void set_qc(Eigen::MatrixXd& data);
-    
+        void backtrack_states();
+
         
         //void set_speeds(const Eigen::MatrixXdXd& speeds);
         void predict(double beta); // predicts with a given penalty
@@ -38,6 +39,7 @@ class SplineOP
 
         //// Getters
         std::vector<int> get_changepoints() const {return changepoints;}
+        std::vector<int> get_statepoints() const {return statepoints;}
         std::vector<Eigen::MatrixXd> get_speeds() const {return speeds;}
         Eigen::MatrixXd get_costs() const {return costs;}
         Eigen::MatrixXd get_initSpeeds() const {return initSpeeds;}
@@ -47,6 +49,7 @@ class SplineOP
         double get_segment_cost(int s, int t, Eigen::VectorXd p_s, Eigen::VectorXd p_t, Eigen::VectorXd v_s); // compute a cost with given parameters
         Eigen::MatrixXd get_pruning_costs() const {return pruning_costs;}
         std::vector<std::vector<int>> get_non_pruned_times() const {return times_for_states;}
+        int get_initial_speed_idx() const {return initial_speed_idx;}
         //setters 
         void set_states(std::vector<Eigen::MatrixXd> new_states);// {states = new_states;}
         void set_initSpeeds(Eigen::MatrixXd new_initSpeeds);// {initSpeeds = new_initSpeeds;}
@@ -70,6 +73,7 @@ class SplineOP
         std::vector<int> sp;
         int nstates;
         int nspeeds;
+        int initial_speed_idx;
         //QuadraticCost qc; // Cost object to compute intervals. Needs DATA to precompute stuff. 
         
         std::vector<Eigen::MatrixXd> speeds; // best speed holder
@@ -85,6 +89,7 @@ class SplineOP
         QuadraticCost qc;
         
         std::vector<int> changepoints;
+        std::vector<int> statepoints;
         std::vector<Eigen::MatrixXd> generate_states(
                                             int nstates,
                                             Eigen::MatrixXd data, // Input is now MatrixXd

@@ -113,6 +113,7 @@ void SplineOP::predict(double beta)
     const double INF = std::numeric_limits<double>::infinity();
     // reinitialize changepoints and costs for new fit (small overhead for first time)
     changepoints = std::vector(1,static_cast<int>(nobs-1)); 
+    statepoints = std::vector<int>{};
     costs.setConstant(INF);
     argmin_i.setConstant(-1);
     argmin_s.setConstant(-1);
@@ -204,6 +205,7 @@ void SplineOP::predict(double beta)
             if (best_s == 0)
             {
                 v_s_best = initSpeeds.col(best_speed_idx);
+                initial_speed_idx = best_speed_idx; 
             }
             else
             {
@@ -504,7 +506,41 @@ void SplineOP::prunev2(int t)
         }
         pruning_costs.setConstant(std::numeric_limits<double>::infinity());
 }
+void SplineOP::backtrack_states(){
+     // Find best final state
+    double min_final = std::numeric_limits<double>::infinity();
+    int best_final_state = -1;
+    for (int j = 0; j < nstates; j++)
+    {
+        if (costs(j, nobs - 1) < min_final)
+        {
+        min_final = costs(j, nobs - 1);
+        best_final_state = j;
+        }
+    }
+    statepoints.push_back(best_final_state);
+    int j = best_final_state;
+    int t = nobs - 1;
+    
+    // Backtrack using argmin_s and argmin_i
+    while (true)
+    {
+    int s_prev = argmin_s(j, t);
+    int i_prev = argmin_i(j, t);
 
+    if (s_prev == 0)
+    {
+        statepoints.push_back(i_prev);
+        break;  // reached the beginning or invalid index
+    }
+    statepoints.push_back(i_prev);  // record state boundary
+
+    t = s_prev;
+    j = i_prev;
+    }
+    // Reverse the order to chronological (0 → nobs)
+    std::reverse(statepoints.begin(), statepoints.end());
+}
 void SplineOP::backtrack_changes()
 {
     // Find best final state
