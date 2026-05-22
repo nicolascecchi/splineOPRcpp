@@ -42,6 +42,7 @@ PYBIND11_MODULE(splineop_cpp, m) {
         // Read-Only Properties (Getters)
         // .property("R_name", &Class::get_method) becomes .def_property_readonly("py_name", &Class::get_method)
         .def_property_readonly("changepoints", &SplineOP::get_changepoints) 
+        .def_property_readonly("statepoints", &SplineOP::get_statepoints) 
         .def_property_readonly("speeds", &SplineOP::get_speeds) 
         .def_property_readonly("costs", &SplineOP::get_costs) 
         .def_property_readonly("init_speeds", &SplineOP::get_initSpeeds) 
@@ -60,6 +61,7 @@ PYBIND11_MODULE(splineop_cpp, m) {
         .def_property_readonly("sum_yL2", &SplineOP::get_sum_yL2)
 
         // Methods
+        .def("backtrack_states", &SplineOP::backtrack_states, "Backtracks states from a model with computed costs.")
         .def("set_qc", &SplineOP::set_qc)
         .def("get_segment_cost", &SplineOP::get_segment_cost) 
         .def("predict", &SplineOP::predict, "Predicts changepoints with given penalty.")
@@ -68,7 +70,8 @@ PYBIND11_MODULE(splineop_cpp, m) {
         .def("get_pruning_costs", &SplineOP::get_pruning_costs, "Should be useless at the end, all +inf.")
         .def("get_non_pruned_times", &SplineOP::get_non_pruned_times, "Non pruned times at the end.")
         .def("set_init_speeds", &SplineOP::set_initSpeeds)
-        .def("set_states", &SplineOP::set_states);
+        .def("set_states", &SplineOP::set_states)
+        .def("get_initial_speed_idx", &SplineOP::get_initial_speed_idx, "Gets the index of the initial speed used in the best solution.");
         // =================================================================
     // 1. Expose SplineOP (Unconstrained Optimal Partitioning)
     // =================================================================
@@ -92,6 +95,7 @@ PYBIND11_MODULE(splineop_cpp, m) {
         // Read-Only Properties (Getters)
         // .property("R_name", &Class::get_method) becomes .def_property_readonly("py_name", &Class::get_method)
         .def_property_readonly("changepoints", &SplineOP_iterated::get_changepoints) 
+        .def_property_readonly("statepoints", &SplineOP_iterated::get_statepoints)
         .def_property_readonly("speeds", &SplineOP_iterated::get_speeds) 
         .def_property_readonly("costs", &SplineOP_iterated::get_costs) 
         .def_property_readonly("init_speeds", &SplineOP_iterated::get_initSpeeds) 
@@ -111,10 +115,12 @@ PYBIND11_MODULE(splineop_cpp, m) {
 
         // Methods
         .def("set_qc", &SplineOP_iterated::set_qc)
+        .def("backtrack_states", &SplineOP_iterated::backtrack_states, "Backtracks states from a model with computed costs.")
         .def("get_segment_cost", &SplineOP_iterated::get_segment_cost) 
         .def("predict", &SplineOP_iterated::predict, "Predicts changepoints with given penalty.")
         .def("pruningv1", &SplineOP_iterated::pruningv1, "Predicts changepoints with given penalty and pruning.")
         .def("pruningv2", &SplineOP_iterated::pruningv2, "Predicts changepoints with given penalty and pruning.")
+        .def("get_initial_speed_idx", &SplineOP_iterated::get_initial_speed_idx, "Gets the index of the initial speed used in the best solution.")
         .def("get_pruning_costs", &SplineOP_iterated::get_pruning_costs, "Should be useless at the end, all +inf.")
         .def("get_non_pruned_times", &SplineOP_iterated::get_non_pruned_times, "Non pruned times at the end.")
         .def("set_init_speeds", &SplineOP_iterated::set_initSpeeds)
