@@ -1,1 +1,0 @@
-Rcpp::loadModule("splineop",TRUE)
